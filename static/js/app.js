@@ -3,10 +3,11 @@
  * Initializes all components and handles global interactions
  */
 
+// Track when we last received a heartbeat
+let lastHeartbeatTime = null;
+
 document.addEventListener('DOMContentLoaded', () => {
     console.log('ARGUS Mission Control initializing...');
-
-    // Initialize components
     initializeApp();
 });
 
@@ -47,8 +48,11 @@ async function initializeApp() {
         // Setup E-STOP handler
         setupEStopHandler();
 
-        // Initial data fetch (fallback if WebSocket is slow)
-        await fetchInitialData();
+        // Start polling at 2s interval (primary data fetch mechanism)
+        startPolling();
+
+        // Start heartbeat age ticker (updates the display every second)
+        startHeartbeatAgeTicker();
 
         console.log('ARGUS Mission Control initialized successfully');
 
@@ -57,25 +61,38 @@ async function initializeApp() {
     }
 }
 
-async function fetchInitialData() {
+// ==================== POLLING (every 2s) ====================
+
+function startPolling() {
+    console.log('Starting telemetry polling (2s interval)...');
+
+    // Immediate first fetch
+    pollTelemetry();
+    pollCommandQueue();
+
+    // Then repeat every 2 seconds
+    setInterval(pollTelemetry, 2000);
+    setInterval(pollCommandQueue, 5000);
+}
+
+async function pollTelemetry() {
     try {
-        // Fetch initial telemetry
         const telemetry = await window.API.getLatestTelemetry('nominal');
         if (telemetry && telemetry.rx_data) {
             const data = telemetry.rx_data;
-            if (data.CDH) window.AppState.updateTelemetry('CDH', data.CDH);
+            if (data.CDH) {
+                window.AppState.updateTelemetry('CDH', data.CDH);
+
+                // Record heartbeat arrival time
+                lastHeartbeatTime = Date.now();
+                updateHeartbeatAgeDisplay(0);
+            }
             if (data.EPS) window.AppState.updateTelemetry('EPS', data.EPS);
             if (data.ADCS) window.AppState.updateTelemetry('ADCS', data.ADCS);
             if (data.GPS) window.AppState.updateTelemetry('GPS', data.GPS);
         }
 
-        // Fetch initial command queue
-        const queue = await window.API.getCommandQueue();
-        if (window.AppState) {
-            window.AppState.setCommandQueue(queue);
-        }
-
-        // Fetch link status
+        // Link status
         const linkStatus = await window.API.getLinkStatus();
         if (window.AppState && linkStatus) {
             window.AppState.setLinkStatus(
@@ -83,12 +100,72 @@ async function fetchInitialData() {
                 linkStatus.last_contact,
                 linkStatus.last_tm_age_seconds
             );
+
+            // Update link indicator in topbar
+            if (window.TelemetryWS) {
+                window.TelemetryWS.updateLinkIndicator(
+                    linkStatus.status,
+                    linkStatus.last_tm_age_seconds
+                );
+            }
         }
 
     } catch (err) {
-        console.warn('Error fetching initial data (may be in mock mode):', err);
+        // Silently fail - backend may not be running
     }
 }
+
+async function pollCommandQueue() {
+    try {
+        const queue = await window.API.getCommandQueue();
+        if (window.AppState) {
+            window.AppState.setCommandQueue(queue);
+        }
+        document.dispatchEvent(new CustomEvent('commands:update', {
+            detail: { queue }
+        }));
+    } catch (err) {
+        // Silently fail
+    }
+}
+
+// ==================== HEARTBEAT AGE ====================
+
+function startHeartbeatAgeTicker() {
+    // Update the heartbeat age display every second
+    setInterval(() => {
+        if (lastHeartbeatTime === null) {
+            updateHeartbeatAgeDisplay(null);
+            return;
+        }
+        const ageSeconds = Math.floor((Date.now() - lastHeartbeatTime) / 1000);
+        updateHeartbeatAgeDisplay(ageSeconds);
+    }, 1000);
+}
+
+function updateHeartbeatAgeDisplay(ageSeconds) {
+    const el = document.getElementById('heartbeat-age-display');
+    if (!el) return;
+
+    if (ageSeconds === null) {
+        el.textContent = '-- s';
+        el.style.color = 'var(--argus-muted)';
+        return;
+    }
+
+    el.textContent = `${ageSeconds} s`;
+
+    // Color coding: green <10s, yellow <30s, red >=30s
+    if (ageSeconds < 10) {
+        el.style.color = 'var(--argus-success)';
+    } else if (ageSeconds < 30) {
+        el.style.color = 'var(--argus-warning)';
+    } else {
+        el.style.color = 'var(--argus-danger)';
+    }
+}
+
+// ==================== E-STOP ====================
 
 function setupEStopHandler() {
     const estopBtn = document.getElementById('estop-btn');
@@ -98,24 +175,20 @@ function setupEStopHandler() {
 
     if (!estopBtn || !modal) return;
 
-    // Open modal
     estopBtn.addEventListener('click', () => {
         modal.classList.add('active');
     });
 
-    // Cancel
     cancelBtn.addEventListener('click', () => {
         modal.classList.remove('active');
     });
 
-    // Click outside to close
     modal.addEventListener('click', (e) => {
         if (e.target === modal) {
             modal.classList.remove('active');
         }
     });
 
-    // Confirm E-STOP
     confirmBtn.addEventListener('click', async () => {
         try {
             confirmBtn.disabled = true;
@@ -127,7 +200,6 @@ function setupEStopHandler() {
                 confirmBtn.textContent = 'SENT';
                 confirmBtn.style.backgroundColor = 'var(--argus-success)';
 
-                // Close modal after short delay
                 setTimeout(() => {
                     modal.classList.remove('active');
                     confirmBtn.disabled = false;
@@ -153,36 +225,8 @@ function setupEStopHandler() {
             modal.classList.add('active');
         }
 
-        // Escape to close modal
         if (e.key === 'Escape' && modal.classList.contains('active')) {
             modal.classList.remove('active');
         }
     });
 }
-
-// Polling fallback for when WebSocket isn't available
-function startPollingFallback() {
-    console.log('Starting polling fallback...');
-
-    setInterval(async () => {
-        try {
-            const telemetry = await window.API.getLatestTelemetry('nominal');
-            if (telemetry && telemetry.rx_data) {
-                const data = telemetry.rx_data;
-                if (data.CDH) window.AppState.updateTelemetry('CDH', data.CDH);
-                if (data.EPS) window.AppState.updateTelemetry('EPS', data.EPS);
-                if (data.ADCS) window.AppState.updateTelemetry('ADCS', data.ADCS);
-                if (data.GPS) window.AppState.updateTelemetry('GPS', data.GPS);
-            }
-        } catch (err) {
-            // Silently fail
-        }
-    }, 2000);
-}
-
-// Export for testing
-window.ARGUSApp = {
-    initialize: initializeApp,
-    fetchInitialData,
-    startPollingFallback
-};
