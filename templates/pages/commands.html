@@ -1,0 +1,278 @@
+{% extends 'base.html' %}
+
+{% block title %}ARGUS Mission Control - Command Queue{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="content-header mb-md">
+        <h2 style="font-size: 1.25rem; color: var(--argus-text-bright);">Command Queue</h2>
+        <button class="btn btn-primary" id="add-command-btn">+ Add Command</button>
+    </div>
+
+    <!-- Command Queue Table -->
+    <div class="card">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="border-bottom: 1px solid var(--argus-border);">
+                    <th style="text-align: left; padding: var(--space-sm); color: var(--argus-muted); font-size: 0.75rem; font-weight: 600;">ID</th>
+                    <th style="text-align: left; padding: var(--space-sm); color: var(--argus-muted); font-size: 0.75rem; font-weight: 600;">Command</th>
+                    <th style="text-align: left; padding: var(--space-sm); color: var(--argus-muted); font-size: 0.75rem; font-weight: 600;">Arguments</th>
+                    <th style="text-align: left; padding: var(--space-sm); color: var(--argus-muted); font-size: 0.75rem; font-weight: 600;">Created</th>
+                    <th style="text-align: right; padding: var(--space-sm); color: var(--argus-muted); font-size: 0.75rem; font-weight: 600;">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="command-queue-table">
+                <!-- Dynamically populated -->
+            </tbody>
+        </table>
+
+        <div id="empty-queue-message" class="hidden" style="text-align: center; padding: var(--space-xl); color: var(--argus-muted);">
+            No commands in queue. The default REQUEST_TM_NOMINAL will be sent.
+        </div>
+    </div>
+
+    <!-- Command History -->
+    <div style="margin-top: var(--space-xl);">
+        <h3 style="font-size: 1rem; color: var(--argus-text-bright); margin-bottom: var(--space-md);">Command History</h3>
+        <div class="card">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="border-bottom: 1px solid var(--argus-border);">
+                        <th style="text-align: left; padding: var(--space-sm); color: var(--argus-muted); font-size: 0.75rem; font-weight: 600;">Time</th>
+                        <th style="text-align: left; padding: var(--space-sm); color: var(--argus-muted); font-size: 0.75rem; font-weight: 600;">Command</th>
+                        <th style="text-align: left; padding: var(--space-sm); color: var(--argus-muted); font-size: 0.75rem; font-weight: 600;">Status</th>
+                    </tr>
+                </thead>
+                <tbody id="command-history-table">
+                    <!-- Dynamically populated -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add Command Modal -->
+<div id="add-command-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 600px;">
+        <h2 style="margin-bottom: var(--space-lg);">Add Command to Queue</h2>
+
+        <form id="add-command-form">
+            <!-- Command Selection -->
+            <div style="margin-bottom: var(--space-md);">
+                <label style="display: block; font-size: 0.75rem; color: var(--argus-muted); margin-bottom: var(--space-xs);">Command Type</label>
+                <select id="command-select" style="width: 100%; padding: var(--space-sm); background: var(--argus-bg); border: 1px solid var(--argus-border); border-radius: var(--radius-md); color: var(--argus-text); font-family: var(--font-mono);">
+                    <optgroup label="Control">
+                        <option value="64">FORCE_REBOOT (0x40)</option>
+                        <option value="65">SWITCH_TO_STATE (0x41)</option>
+                        <option value="68">TURN_OFF_PAYLOAD (0x44)</option>
+                    </optgroup>
+                    <optgroup label="Uplink">
+                        <option value="66">UPLINK_TIME_REFERENCE (0x42)</option>
+                        <option value="67">UPLINK_ORBIT_REFERENCE (0x43)</option>
+                    </optgroup>
+                    <optgroup label="Telemetry Request">
+                        <option value="70" selected>REQUEST_TM_NOMINAL (0x46)</option>
+                        <option value="71">REQUEST_TM_HAL (0x47)</option>
+                        <option value="72">REQUEST_TM_STORAGE (0x48)</option>
+                        <option value="73">REQUEST_TM_PAYLOAD (0x49)</option>
+                    </optgroup>
+                    <optgroup label="File Transfer">
+                        <option value="74">FILE_METADATA (0x4A)</option>
+                        <option value="80">DOWNLINK_ALL_FILES (0x50)</option>
+                    </optgroup>
+                </select>
+            </div>
+
+            <!-- Dynamic Arguments -->
+            <div id="command-args-container" style="margin-bottom: var(--space-lg);">
+                <!-- Arguments will be dynamically added based on command selection -->
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex gap-md">
+                <button type="button" class="btn" style="flex: 1; background: var(--argus-border);" id="cancel-add-command">Cancel</button>
+                <button type="submit" class="btn btn-primary" style="flex: 1;">Add to Queue</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const addBtn = document.getElementById('add-command-btn');
+    const modal = document.getElementById('add-command-modal');
+    const cancelBtn = document.getElementById('cancel-add-command');
+    const form = document.getElementById('add-command-form');
+    const commandSelect = document.getElementById('command-select');
+    const argsContainer = document.getElementById('command-args-container');
+
+    // Command argument schemas
+    const argSchemas = {
+        64: {}, // FORCE_REBOOT
+        65: { // SWITCH_TO_STATE
+            target_state_id: { type: 'number', label: 'Target State ID', min: 0, max: 255 },
+            time_in_state: { type: 'number', label: 'Time in State (seconds)', min: 0 }
+        },
+        66: {}, // UPLINK_TIME_REFERENCE
+        67: { // UPLINK_ORBIT_REFERENCE
+            time_reference: { type: 'number', label: 'Time Reference' },
+            position_x: { type: 'number', label: 'Position X' },
+            position_y: { type: 'number', label: 'Position Y' },
+            position_z: { type: 'number', label: 'Position Z' },
+            velocity_x: { type: 'number', label: 'Velocity X' },
+            velocity_y: { type: 'number', label: 'Velocity Y' },
+            velocity_z: { type: 'number', label: 'Velocity Z' }
+        },
+        68: {}, // TURN_OFF_PAYLOAD
+        69: {}, // SCHEDULE_OD_EXPERIMENT
+        70: {}, // REQUEST_TM_NOMINAL
+        71: {}, // REQUEST_TM_HAL
+        72: {}, // REQUEST_TM_STORAGE
+        73: {}, // REQUEST_TM_PAYLOAD
+        74: { // FILE_METADATA
+            file_id: { type: 'number', label: 'File ID', min: 1, max: 10 },
+            file_time: { type: 'number', label: 'File Time (Unix timestamp)' }
+        },
+        80: { // DOWNLINK_ALL_FILES
+            file_id: { type: 'number', label: 'File ID', min: 1, max: 10 },
+            file_time: { type: 'number', label: 'File Time (Unix timestamp)' }
+        }
+    };
+
+    // Update args form based on command selection
+    commandSelect.addEventListener('change', () => {
+        const cmdId = parseInt(commandSelect.value);
+        const schema = argSchemas[cmdId] || {};
+
+        argsContainer.innerHTML = '';
+
+        if (Object.keys(schema).length === 0) {
+            argsContainer.innerHTML = '<p class="text-muted" style="font-size: 0.875rem;">No arguments required</p>';
+            return;
+        }
+
+        for (const [key, config] of Object.entries(schema)) {
+            const div = document.createElement('div');
+            div.style.marginBottom = 'var(--space-sm)';
+            div.innerHTML = `
+                <label style="display: block; font-size: 0.75rem; color: var(--argus-muted); margin-bottom: var(--space-xs);">${config.label}</label>
+                <input type="${config.type}" name="${key}"
+                    ${config.min !== undefined ? `min="${config.min}"` : ''}
+                    ${config.max !== undefined ? `max="${config.max}"` : ''}
+                    style="width: 100%; padding: var(--space-sm); background: var(--argus-bg); border: 1px solid var(--argus-border); border-radius: var(--radius-md); color: var(--argus-text); font-family: var(--font-mono);"
+                    required>
+            `;
+            argsContainer.appendChild(div);
+        }
+    });
+
+    // Trigger initial update
+    commandSelect.dispatchEvent(new Event('change'));
+
+    // Modal open/close
+    addBtn.addEventListener('click', () => modal.classList.add('active'));
+    cancelBtn.addEventListener('click', () => modal.classList.remove('active'));
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.classList.remove('active');
+    });
+
+    // Form submission
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const cmdId = parseInt(commandSelect.value);
+        const args = {};
+
+        // Collect arguments
+        const inputs = argsContainer.querySelectorAll('input');
+        inputs.forEach(input => {
+            args[input.name] = parseInt(input.value);
+        });
+
+        try {
+            const response = await fetch('/api/commands/queue', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ command_id: cmdId, args })
+            });
+
+            if (response.ok) {
+                modal.classList.remove('active');
+                form.reset();
+                // Refresh command queue
+                loadCommandQueue();
+            } else {
+                const error = await response.json();
+                alert('Error: ' + (error.error || 'Failed to add command'));
+            }
+        } catch (err) {
+            alert('Error: ' + err.message);
+        }
+    });
+
+    // Load command queue
+    async function loadCommandQueue() {
+        try {
+            const response = await fetch('/api/commands/queue');
+            const queue = await response.json();
+
+            const table = document.getElementById('command-queue-table');
+            const emptyMessage = document.getElementById('empty-queue-message');
+
+            if (queue.length === 0) {
+                table.innerHTML = '';
+                emptyMessage.classList.remove('hidden');
+                return;
+            }
+
+            emptyMessage.classList.add('hidden');
+            table.innerHTML = queue.map((cmd, idx) => `
+                <tr style="border-bottom: 1px solid var(--argus-border);">
+                    <td style="padding: var(--space-sm); font-family: var(--font-mono);">${cmd.id}</td>
+                    <td style="padding: var(--space-sm);">
+                        <span style="color: ${idx === 0 ? 'var(--argus-info)' : 'var(--argus-text)'}; font-family: var(--font-mono);">
+                            ${cmd.command_name}
+                        </span>
+                        ${idx === 0 ? '<span class="status-badge" style="margin-left: var(--space-sm); background: var(--argus-info-dim); color: var(--argus-info);">NEXT</span>' : ''}
+                    </td>
+                    <td style="padding: var(--space-sm); font-family: var(--font-mono); font-size: 0.75rem; color: var(--argus-muted);">
+                        ${JSON.stringify(cmd.args)}
+                    </td>
+                    <td style="padding: var(--space-sm); font-size: 0.75rem; color: var(--argus-muted);">
+                        ${new Date(cmd.created_at).toLocaleTimeString()}
+                    </td>
+                    <td style="padding: var(--space-sm); text-align: right;">
+                        <button class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; background: var(--argus-danger-dim); color: var(--argus-danger);"
+                            onclick="deleteCommand(${cmd.id})">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        } catch (err) {
+            console.error('Error loading command queue:', err);
+        }
+    }
+
+    // Delete command
+    window.deleteCommand = async function(cmdId) {
+        if (!confirm('Delete this command from the queue?')) return;
+
+        try {
+            const response = await fetch(`/api/commands/queue/${cmdId}`, { method: 'DELETE' });
+            if (response.ok) {
+                loadCommandQueue();
+            }
+        } catch (err) {
+            alert('Error: ' + err.message);
+        }
+    };
+
+    // Initial load
+    loadCommandQueue();
+
+    // Refresh every 5 seconds
+    setInterval(loadCommandQueue, 5000);
+});
+</script>
+{% endblock %}

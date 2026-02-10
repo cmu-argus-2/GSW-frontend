@@ -1,0 +1,27 @@
+<div class="command-strip" id="command-strip">
+    <div class="command-strip-header">
+        <span class="status-card-title">Command Queue</span>
+        <span class="command-count" id="command-queue-count">0 queued</span>
+    </div>
+
+    <!-- Next Command (highlighted) -->
+    <div class="command-item next" id="next-command">
+        <div>
+            <span class="command-name" id="next-command-name">--</span>
+            <div class="text-muted" style="font-size: 0.625rem;" id="next-command-args">No arguments</div>
+        </div>
+        <span class="command-countdown" id="next-command-countdown">--:--</span>
+    </div>
+
+    <!-- Scheduled Commands Preview -->
+    <div id="scheduled-commands">
+        <!-- Dynamically populated -->
+    </div>
+
+    <!-- View All Link -->
+    <div style="margin-top: var(--space-md); text-align: center;">
+        <a href="/commands" class="text-info" style="font-size: 0.75rem; text-decoration: none;">
+            View full queue &rarr;
+        </a>
+    </div>
+</div>

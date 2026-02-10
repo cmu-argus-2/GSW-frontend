@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}ARGUS Mission Control - Dashboard{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <!-- Telemetry Canvas -->
+    <section>
+        <div class="content-header mb-md">
+            <h2 style="font-size: 1rem; color: var(--argus-text-bright);">Telemetry Overview</h2>
+            <div class="flex items-center gap-sm">
+                <span class="text-muted" style="font-size: 0.75rem;">Last update:</span>
+                <span class="font-mono" style="font-size: 0.75rem;" id="last-update-time">--</span>
+            </div>
+        </div>
+        {% include 'components/telemetry_canvas.html' %}
+    </section>
+
+    <!-- Bottom Row: Command Strip + Trends -->
+    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: var(--space-md); margin-top: var(--space-md);">
+        <!-- Command Strip -->
+        {% include 'components/command_strip.html' %}
+
+        <!-- Trend Panel -->
+        {% include 'components/trend_panel.html' %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/components/trend-chart.js') }}"></script>
+<script>
+    // Initialize dashboard-specific features
+    document.addEventListener('DOMContentLoaded', () => {
+        // Initialize trend chart
+        if (window.TrendChart) {
+            window.trendChart = new TrendChart('trend-chart', {
+                fields: ['EPS.BATTERY_PACK_REPORTED_SOC', 'EPS.BATTERY_PACK_VOLTAGE']
+            });
+        }
+
+        // Trend panel toggle
+        const trendHeader = document.getElementById('trend-header');
+        const trendContent = document.getElementById('trend-content');
+        const trendToggle = document.getElementById('trend-toggle');
+
+        trendHeader.addEventListener('click', () => {
+            trendContent.classList.toggle('expanded');
+            trendToggle.classList.toggle('expanded');
+        });
+
+        // Tab switching
+        document.querySelectorAll('.trend-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.trend-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                // Update chart based on selected tab
+                if (window.trendChart) {
+                    window.trendChart.switchTab(tab.dataset.tab);
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

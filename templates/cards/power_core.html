@@ -1,0 +1,39 @@
+<div class="status-card" id="power-core-card">
+    <div class="status-card-header">
+        <span class="status-card-title">Power Core</span>
+        <span class="status-badge nominal" id="power-status-badge">NOMINAL</span>
+    </div>
+
+    <!-- Battery Widget -->
+    <div class="battery-widget">
+        <div class="battery-spine">
+            <div class="battery-fill high" id="battery-fill" style="height: 0%;"></div>
+        </div>
+        <div class="battery-percent" id="battery-soc-display">--%</div>
+    </div>
+
+    <div class="status-row">
+        <span class="status-label">Voltage</span>
+        <span class="status-value font-mono" id="battery-voltage-value">-- V</span>
+    </div>
+
+    <div class="status-row">
+        <span class="status-label">Current</span>
+        <span class="status-value font-mono" id="battery-current-value">-- mA</span>
+    </div>
+
+    <div class="status-row">
+        <span class="status-label">Temperature</span>
+        <span class="status-value font-mono" id="battery-temp-value">-- C</span>
+    </div>
+
+    <div class="status-row">
+        <span class="status-label">Time to Empty</span>
+        <span class="status-value font-mono" id="battery-tte-value">--:--</span>
+    </div>
+
+    <div class="status-row">
+        <span class="status-label">Low Power Mode</span>
+        <span class="status-value font-mono" id="low-power-value">--</span>
+    </div>
+</div>

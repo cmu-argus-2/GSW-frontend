@@ -1,0 +1,35 @@
+<div class="trend-panel" id="trend-panel">
+    <div class="trend-header" id="trend-header">
+        <span class="status-card-title">Telemetry Trends</span>
+        <span class="trend-toggle" id="trend-toggle">&#9660;</span>
+    </div>
+
+    <div class="trend-content" id="trend-content">
+        <!-- Subsystem Tabs -->
+        <div class="trend-tabs">
+            <button class="trend-tab active" data-tab="power">Power</button>
+            <button class="trend-tab" data-tab="thermal">Thermal</button>
+            <button class="trend-tab" data-tab="adcs">ADCS</button>
+            <button class="trend-tab" data-tab="gps">GPS</button>
+        </div>
+
+        <!-- Chart Container -->
+        <div class="trend-chart" id="trend-chart"></div>
+
+        <!-- Legend / Controls -->
+        <div style="margin-top: var(--space-sm); display: flex; gap: var(--space-md); font-size: 0.75rem;">
+            <label style="display: flex; align-items: center; gap: var(--space-xs);">
+                <input type="checkbox" id="trend-battery-soc" checked>
+                <span style="color: var(--argus-success);">Battery SOC</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: var(--space-xs);">
+                <input type="checkbox" id="trend-voltage" checked>
+                <span style="color: var(--argus-info);">Voltage</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: var(--space-xs);">
+                <input type="checkbox" id="trend-current">
+                <span style="color: var(--argus-warning);">Current</span>
+            </label>
+        </div>
+    </div>
+</div>

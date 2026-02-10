@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}ARGUS Mission Control - Telemetry Trends{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="content-header mb-md">
+        <h2 style="font-size: 1.25rem; color: var(--argus-text-bright);">Telemetry Trends</h2>
+        <div class="flex items-center gap-md">
+            <select id="time-range" style="padding: var(--space-sm); background: var(--argus-surface); border: 1px solid var(--argus-border); border-radius: var(--radius-md); color: var(--argus-text);">
+                <option value="5">Last 5 minutes</option>
+                <option value="15">Last 15 minutes</option>
+                <option value="60" selected>Last 1 hour</option>
+                <option value="360">Last 6 hours</option>
+                <option value="1440">Last 24 hours</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Power Trends -->
+    <div class="card mb-md">
+        <h3 style="font-size: 0.875rem; color: var(--argus-muted); margin-bottom: var(--space-md);">Power System</h3>
+        <div id="power-chart" style="height: 250px;"></div>
+    </div>
+
+    <!-- Thermal Trends -->
+    <div class="card mb-md">
+        <h3 style="font-size: 0.875rem; color: var(--argus-muted); margin-bottom: var(--space-md);">Thermal</h3>
+        <div id="thermal-chart" style="height: 250px;"></div>
+    </div>
+
+    <!-- ADCS Trends -->
+    <div class="card mb-md">
+        <h3 style="font-size: 0.875rem; color: var(--argus-muted); margin-bottom: var(--space-md);">ADCS</h3>
+        <div id="adcs-chart" style="height: 250px;"></div>
+    </div>
+
+    <!-- GPS Trends -->
+    <div class="card">
+        <h3 style="font-size: 0.875rem; color: var(--argus-muted); margin-bottom: var(--space-md);">GPS / Orbital</h3>
+        <div id="gps-chart" style="height: 250px;"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/components/trend-chart.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const chartConfig = {
+        paper_bgcolor: 'transparent',
+        plot_bgcolor: '#111827',
+        font: { color: '#9ca3af', family: 'Inter, sans-serif' },
+        xaxis: {
+            type: 'date',
+            gridcolor: '#1f2937',
+            linecolor: '#1f2937'
+        },
+        yaxis: {
+            gridcolor: '#1f2937',
+            linecolor: '#1f2937'
+        },
+        margin: { t: 20, r: 20, b: 40, l: 50 },
+        showlegend: true,
+        legend: { orientation: 'h', y: -0.2 }
+    };
+
+    // Initialize empty charts
+    Plotly.newPlot('power-chart', [], chartConfig);
+    Plotly.newPlot('thermal-chart', [], chartConfig);
+    Plotly.newPlot('adcs-chart', [], chartConfig);
+    Plotly.newPlot('gps-chart', [], chartConfig);
+
+    // Note: In production, these would be populated with historical data from the API
+    // For now, they show empty charts that would be updated via WebSocket
+});
+</script>
+{% endblock %}

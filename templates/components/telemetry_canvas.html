@@ -1,0 +1,93 @@
+<div class="telemetry-grid" id="telemetry-canvas">
+    <!-- Battery SOC -->
+    <div class="telemetry-tile" data-field="EPS.BATTERY_PACK_REPORTED_SOC" data-unit="%">
+        <div class="tile-header">
+            <span class="tile-label">Battery SOC</span>
+            <span class="tile-status nominal" id="tile-battery-soc-status">NOMINAL</span>
+        </div>
+        <div class="tile-value" id="tile-battery-soc-value">--</div>
+        <div class="tile-unit">%</div>
+        <div class="progress-bar">
+            <div class="progress-fill nominal" id="tile-battery-soc-bar" style="width: 0%;"></div>
+        </div>
+    </div>
+
+    <!-- Mainboard Temperature -->
+    <div class="telemetry-tile" data-field="EPS.MAINBOARD_TEMPERATURE" data-unit="C">
+        <div class="tile-header">
+            <span class="tile-label">Mainboard Temp</span>
+            <span class="tile-status nominal" id="tile-mainboard-temp-status">NOMINAL</span>
+        </div>
+        <div class="tile-value" id="tile-mainboard-temp-value">--</div>
+        <div class="tile-unit">C</div>
+        <div class="tile-sparkline" id="tile-mainboard-temp-spark"></div>
+    </div>
+
+    <!-- Battery Voltage -->
+    <div class="telemetry-tile" data-field="EPS.BATTERY_PACK_VOLTAGE" data-unit="V">
+        <div class="tile-header">
+            <span class="tile-label">Battery Voltage</span>
+            <span class="tile-status nominal" id="tile-voltage-status">NOMINAL</span>
+        </div>
+        <div class="tile-value" id="tile-voltage-value">--</div>
+        <div class="tile-unit">V</div>
+        <div class="tile-sparkline" id="tile-voltage-spark"></div>
+    </div>
+
+    <!-- RAM Usage -->
+    <div class="telemetry-tile" data-field="CDH.CURRENT_RAM_USAGE" data-unit="%">
+        <div class="tile-header">
+            <span class="tile-label">RAM Usage</span>
+            <span class="tile-status nominal" id="tile-ram-status">NOMINAL</span>
+        </div>
+        <div class="tile-value" id="tile-ram-value">--</div>
+        <div class="tile-unit">%</div>
+        <div class="progress-bar">
+            <div class="progress-fill nominal" id="tile-ram-bar" style="width: 0%;"></div>
+        </div>
+    </div>
+
+    <!-- SD Usage -->
+    <div class="telemetry-tile" data-field="CDH.SD_USAGE" data-unit="MB">
+        <div class="tile-header">
+            <span class="tile-label">SD Usage</span>
+            <span class="tile-status nominal" id="tile-sd-status">NOMINAL</span>
+        </div>
+        <div class="tile-value" id="tile-sd-value">--</div>
+        <div class="tile-unit">MB</div>
+        <div class="tile-sparkline" id="tile-sd-spark"></div>
+    </div>
+
+    <!-- RF LDO Current -->
+    <div class="telemetry-tile" data-field="EPS.RF_LDO_OUTPUT_CURRENT" data-unit="mA">
+        <div class="tile-header">
+            <span class="tile-label">RF LDO Current</span>
+            <span class="tile-status nominal" id="tile-rf-status">NOMINAL</span>
+        </div>
+        <div class="tile-value" id="tile-rf-value">--</div>
+        <div class="tile-unit">mA</div>
+        <div class="tile-sparkline" id="tile-rf-spark"></div>
+    </div>
+
+    <!-- Gyro RMS -->
+    <div class="telemetry-tile" data-field="ADCS.GYRO_RMS" data-unit="rad/s">
+        <div class="tile-header">
+            <span class="tile-label">Gyro RMS</span>
+            <span class="tile-status nominal" id="tile-gyro-status">NOMINAL</span>
+        </div>
+        <div class="tile-value" id="tile-gyro-value">--</div>
+        <div class="tile-unit">rad/s</div>
+        <div class="tile-sparkline" id="tile-gyro-spark"></div>
+    </div>
+
+    <!-- Solar Power (Aggregate) -->
+    <div class="telemetry-tile" data-field="EPS.SOLAR_POWER" data-unit="mW">
+        <div class="tile-header">
+            <span class="tile-label">Solar Power</span>
+            <span class="tile-status nominal" id="tile-solar-status">NOMINAL</span>
+        </div>
+        <div class="tile-value" id="tile-solar-value">--</div>
+        <div class="tile-unit">mW</div>
+        <div class="tile-sparkline" id="tile-solar-spark"></div>
+    </div>
+</div>

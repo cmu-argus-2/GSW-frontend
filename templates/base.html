@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ARGUS Mission Control{% endblock %}</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <div class="layout-grid">
+        <!-- Top Bar -->
+        <header class="layout-topbar">
+            {% include 'components/topbar.html' %}
+        </header>
+
+        <!-- Left Sidebar -->
+        <aside class="layout-sidebar">
+            {% include 'components/sidebar.html' %}
+        </aside>
+
+        <!-- Main Content -->
+        <main class="layout-main">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <!-- E-STOP Confirmation Modal -->
+    <div id="estop-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 style="color: var(--argus-danger); margin-bottom: var(--space-md);">EMERGENCY STOP</h2>
+            <p style="margin-bottom: var(--space-lg);">
+                This will send a <strong>FORCE_REBOOT</strong> command to the spacecraft.
+                Are you sure you want to proceed?
+            </p>
+            <div class="flex gap-md">
+                <button id="estop-cancel" class="btn" style="flex: 1; background: var(--argus-border);">Cancel</button>
+                <button id="estop-confirm" class="btn btn-danger" style="flex: 1;">CONFIRM E-STOP</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Socket.IO -->
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+
+    <!-- Plotly.js for charts -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+
+    <!-- Application scripts -->
+    <script src="{{ url_for('static', filename='js/state.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/api.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/websocket.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/components/met-clock.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/components/telemetry-tile.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/components/command-strip.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>
