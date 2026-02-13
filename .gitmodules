@@ -1,0 +1,3 @@
+[submodule "aci/splat"]
+	path = aci/splat
+	url = https://github.com/cmu-argus-2/splat.git

@@ -1,13 +1,13 @@
 # 🛰️ Satellite Command Interface
 
-A web-based interface for building, queuing, and sending commands to satellite ground stations via XML-RPC protocol.
+A web-based interface for building, managing quick commands, and sending commands to satellite ground stations via XML-RPC protocol.
 
 ## Overview
 
 This application provides a user-friendly web interface to interact with satellite systems through a ground station. It allows operators to:
 - Search and select satellite commands from a comprehensive command database
 - Build command packets with proper argument validation
-- Queue multiple commands for execution
+- Manage quick commands for execution
 - Monitor ground station connection status in real-time
 - Track command execution results
 - View packet history
@@ -18,6 +18,8 @@ This application provides a user-friendly web interface to interact with satelli
 - Fix the issue that the mouse clicking the the command dropdown does not work
 - impelemnt the last received packet and packet history
 - implement the config page properly (currently it only has the UI, but no functionality)
+- implement command scheduling
+- get and process ack from groundstation
 
 ## Architecture
 
@@ -42,11 +44,12 @@ The system consists of three main components:
 - **Mouse selection** - Click on any suggestion to select it
 - **Auto-complete** - Dropdown shows command ID, arguments, and size
 
-### 📋 Command Queue Management
-- **Visual queue** - See all queued commands before sending
-- **Predefined commands** - Auto-load frequently used commands from JSON config
-- **Argument validation** - Automatic type conversion (int, float, string)
-- **Remove/reorder** - Full control over the command queue
+### ⚡ Quick Command Management
+- **Quick Access Library** - Save frequently used commands to a dedicated panel
+- **Predefined commands** - Auto-load essential commands from JSON config on startup
+- **Argument validation** - Automatic type conversion (int, float, string) before saving
+- **Persistency** - Build a command once, add it to the list, and execute it multiple times
+- **Manage List** - Remove or reorder commands in your Quick Command view
 
 ### 📡 Real-Time Status Monitoring
 - **Ground station status** - Visual indicator shows connection state
@@ -135,12 +138,12 @@ The server will start on `http://0.0.0.0:5001`
    - Input fields appear automatically for selected command
    - Enter values for each required argument
 
-3. **Add to queue**
-   - Click "Add to Queue" button
-   - Command appears in the queue panel
+3. **Add to quick commands**
+    - Click "Add to Quick Commands" button
+    - Command appears in the quick commands panel
 
 4. **Send commands**
-   - Click "Send Command" on any queued command
+    - Click "Send Command" on any quick command
    - Watch for visual feedback (green = success, red = error)
 
 5. **Monitor status**

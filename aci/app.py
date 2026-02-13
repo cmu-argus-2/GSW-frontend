@@ -275,4 +275,14 @@ def toggle_ground_station_status():
     return ground_station_active
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=8080, )
+    # pretty print the server status on startup
+    print(f"""
+    ╔═══════════════════════════════════════════════════════════╗
+    ║           ARGUS Satellite Command Interface               ║
+    ╠═══════════════════════════════════════════════════════════╣
+    ║  Running on: http://localhost:8080                        ║
+    ║                                                           ║
+    ╚═══════════════════════════════════════════════════════════╝
+    """)
+        
+    app.run(debug=True, host='0.0.0.0', port=8080,)

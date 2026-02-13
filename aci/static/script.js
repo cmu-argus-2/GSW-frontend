@@ -1,6 +1,6 @@
 // Global variables
 let commands = [];
-let commandQueue = [];
+let quickCommands = [];
 let selectedCommand = null;
 let packetHistory = [];
 
@@ -20,7 +20,7 @@ async function loadCommands() {
 }
 
 /**
- * Load predefined commands and add them to the queue
+ * Load predefined commands and add them to quick commands
  */
 async function loadPredefinedCommands() {
     try {
@@ -28,7 +28,7 @@ async function loadPredefinedCommands() {
         const data = await response.json();
         if (data.success && data.commands.length > 0) {
             data.commands.forEach(predefinedCmd => {
-                addCommandToQueue(predefinedCmd.command, predefinedCmd.arguments, true);
+                addQuickCommand(predefinedCmd.command, predefinedCmd.arguments, true);
             });
         }
     } catch (error) {
@@ -318,13 +318,13 @@ function displayArgumentInputs() {
 }
 
 /**
- * Add command to the queue programmatically
+ * Add quick command programmatically
  * @param {string} commandName - The command name
  * @param {object} args - The command arguments
  * @param {boolean} isPredefined - Whether this is a predefined command
  */
-function addCommandToQueue(commandName, args, isPredefined = false) {
-    const queueItem = {
+function addQuickCommand(commandName, args, isPredefined = false) {
+    const quickCommandItem = {
         id: Date.now() + Math.random(), // Ensure unique ID
         command: commandName,
         arguments: args,
@@ -332,12 +332,12 @@ function addCommandToQueue(commandName, args, isPredefined = false) {
         predefined: isPredefined
     };
 
-    commandQueue.push(queueItem);
-    renderQueue();
+    quickCommands.push(quickCommandItem);
+    renderQuickCommands();
 }
 
 /**
- * Add command to the queue
+ * Add quick command
  */
 document.getElementById('add-command-btn').addEventListener('click', function() {
     if (!selectedCommand) return;
@@ -348,7 +348,7 @@ document.getElementById('add-command-btn').addEventListener('click', function() 
         args[arg] = input.value;
     });
 
-    addCommandToQueue(selectedCommand.name, args, false);
+    addQuickCommand(selectedCommand.name, args, false);
     
     // Reset form
     document.getElementById('command-input').value = '';
@@ -362,19 +362,19 @@ document.getElementById('add-command-btn').addEventListener('click', function() 
 });
 
 /**
- * Render the command queue to the DOM
+ * Render quick commands to the DOM
  */
-function renderQueue() {
-    const container = document.getElementById('command-queue');
+function renderQuickCommands() {
+    const container = document.getElementById('quick-commands');
     
-    if (commandQueue.length === 0) {
-        container.innerHTML = '<div class="empty-state">No commands in queue. Add a command to get started.</div>';
+    if (quickCommands.length === 0) {
+        container.innerHTML = '<div class="empty-state">No quick commands yet. Add a command to get started.</div>';
         return;
     }
 
-    container.innerHTML = commandQueue.map(item => `
+    container.innerHTML = quickCommands.map(item => `
         <div class="command-item" data-command-id="${item.id}">
-            <button class="remove-btn" onclick="removeFromQueue(${item.id})">✕</button>
+            <button class="remove-btn" onclick="removeQuickCommand(${item.id})">✕</button>
             <h3>
                 ${item.command}
                 ${item.predefined ? '<span class="predefined-badge">Predefined</span>' : ''}
@@ -392,11 +392,11 @@ function renderQueue() {
 }
 
 /**
- * Remove command from the queue
+ * Remove quick command
  */
-function removeFromQueue(id) {
-    commandQueue = commandQueue.filter(item => item.id !== id);
-    renderQueue();
+function removeQuickCommand(id) {
+    quickCommands = quickCommands.filter(item => item.id !== id);
+    renderQuickCommands();
 }
 
 /**
@@ -451,7 +451,7 @@ function showStatusMessage(statusElement, message, type, duration) {
  * Send command to the satellite via API
  */
 async function sendCommand(id) {
-    const item = commandQueue.find(cmd => cmd.id === id);
+    const item = quickCommands.find(cmd => cmd.id === id);
     if (!item) return;
 
     try {

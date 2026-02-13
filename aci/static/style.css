@@ -251,8 +251,8 @@ button:active {
     transform: translateY(0);
 }
 
-/* Queue Zone */
-.queue-zone {
+/* Quick Command Zone */
+.quick-command-zone {
     flex: 1.5;
     overflow-y: auto;
 }
