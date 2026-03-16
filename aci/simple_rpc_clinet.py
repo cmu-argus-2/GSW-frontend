@@ -22,7 +22,10 @@ class SimpleRPCClient:
 
     def __init__(self, address):
         self.address = address
-        self.server = xmlrpc.client.ServerProxy(f'http://{address[0]}:{address[1]}')
+        self.server = xmlrpc.client.ServerProxy(
+            f'http://{address[0]}:{address[1]}',
+            allow_none=True
+        )
 
         self.thread_running = True
         threading.Thread(target=self.ping_server, daemon=True).start()
@@ -46,6 +49,14 @@ class SimpleRPCClient:
 
     def stop(self):
         self.thread_running = False
+
+    def update_address(self, ip, port):
+        """Update the XML-RPC server address used by this client."""
+        self.address = (ip, int(port))
+        self.server = xmlrpc.client.ServerProxy(
+            f'http://{ip}:{port}',
+            allow_none=True
+        )
         
     
     def send_command(self, cmd_name, params):
@@ -59,5 +70,45 @@ class SimpleRPCClient:
         response = self.server.add_command(cmd_name, params)
         print("Received response from rpc server:", response)
         
+        return response
+
+    def get_command_definitions(self):
+        """
+        Request command metadata from the SimpleRPC server.
+
+        The SimpleRPC server should expose an XML-RPC method named
+        `get_command_definitions` that returns an XML-RPC compatible array of
+        structs with this shape:
+
+        [
+            {
+                "name": "SET_MODE",
+                "id": 7,
+                "size": 4,
+                "precondition": "",  # use empty string if not needed
+                "arguments": [
+                    {"name": "mode_id", "type": "B"},
+                    {"name": "timeout", "type": "H"}
+                ]
+            }
+        ]
+
+        Expected fields per command:
+        - name: str
+        - id: int
+        - size: int
+        - precondition: str
+        - arguments: list[dict] where each dict contains:
+            - name: str
+            - type: str
+
+        The `type` field should use the same format codes the frontend/backend
+        already understands:
+        - integers: b, B, ?, h, H, i, I, l, L, q, Q, n, N
+        - floats: e, d, F, D
+        - strings: s, p
+        """
+        response = self.server.get_command_definitions()
+        print("Received command definitions from rpc server")
         return response
         

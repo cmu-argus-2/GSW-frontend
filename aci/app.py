@@ -6,8 +6,6 @@ A simple Flask web app to build and send commands to the satellite.
 from flask import Flask, render_template, request, jsonify
 from datetime import datetime
 import json
-from splat.splat.telemetry_helper import get_argument_type, list_all_commands
-from splat.splat.telemetry_codec import pack, Command
 
 from simple_rpc_clinet import SimpleRPCClient, address
 
@@ -34,6 +32,87 @@ packet_history = []
 # Ground station status
 ground_station_active = False
 
+INT_FORMATS = {'b', 'B', '?', 'h', 'H', 'i', 'I', 'l', 'L', 'q', 'Q', 'n', 'N'}
+FLOAT_FORMATS = {'e', 'd', 'F', 'D'}
+STRING_FORMATS = {'s', 'p'}
+
+
+def normalize_command_definitions(raw_definitions):
+    """
+    Normalize the RPC command metadata into a consistent mapping keyed by
+    command name.
+    """
+    command_map = {}
+
+    if isinstance(raw_definitions, dict):
+        iterable = []
+        for command_name, definition in raw_definitions.items():
+            normalized_definition = dict(definition or {})
+            normalized_definition.setdefault('name', command_name)
+            iterable.append(normalized_definition)
+    elif isinstance(raw_definitions, list):
+        iterable = raw_definitions
+    else:
+        raise ValueError('RPC command definitions must be a list or dict')
+
+    for definition in iterable:
+        if not isinstance(definition, dict):
+            raise ValueError('Each command definition returned by RPC must be a dict')
+
+        command_name = definition.get('name')
+        if not command_name:
+            raise ValueError('Command definition is missing required field: name')
+
+        raw_arguments = definition.get('arguments', [])
+        argument_names = []
+        argument_types = {}
+
+        for argument in raw_arguments:
+            if isinstance(argument, dict):
+                argument_name = argument.get('name')
+                argument_type = argument.get('type')
+            else:
+                argument_name = argument
+                argument_type = None
+
+            if not argument_name:
+                raise ValueError(f"Command '{command_name}' has an argument without a name")
+
+            argument_names.append(argument_name)
+            if argument_type:
+                argument_types[argument_name] = argument_type
+
+        command_map[command_name] = {
+            'name': command_name,
+            'id': definition.get('id', 0),
+            'arguments': argument_names,
+            'argument_types': argument_types,
+            'precondition': definition.get('precondition', ''),
+            'size': definition.get('size', 0)
+        }
+
+    return command_map
+
+
+def get_rpc_command_definitions():
+    """Fetch and normalize command metadata from the SimpleRPC server."""
+    raw_definitions = rpc_client.get_command_definitions()
+    return normalize_command_definitions(raw_definitions)
+
+
+def coerce_argument_value(arg_name, arg_value, arg_format):
+    """Convert incoming string values from the UI to the expected Python type."""
+    if arg_format in INT_FORMATS:
+        return int(arg_value)
+    if arg_format in FLOAT_FORMATS:
+        return float(arg_value)
+    if arg_format in STRING_FORMATS or arg_format is None:
+        return str(arg_value)
+
+    raise ValueError(
+        f"Unknown argument type '{arg_format}' for argument '{arg_name}'"
+    )
+
 @app.route('/')
 def index():
     """Render the main interface"""
@@ -43,7 +122,7 @@ def index():
 def get_commands():
     """Get all available commands with their properties"""
     try:
-        commands = list_all_commands()
+        commands = get_rpc_command_definitions()
         # Convert to a format easier for the frontend
         command_list = []
         for cmd_name, props in commands.items():
@@ -51,7 +130,8 @@ def get_commands():
                 'name': cmd_name,
                 'id': props['id'],
                 'arguments': props['arguments'],
-                'precondition': props['precond'],
+                'argument_types': props['argument_types'],
+                'precondition': props['precondition'],
                 'size': props['size']
             })
         return jsonify({'success': True, 'commands': command_list})
@@ -80,30 +160,18 @@ def send_command():
         data = request.json
         cmd_name = data['command']
         arguments = data['arguments']
+        command_definitions = get_rpc_command_definitions()
+        command_definition = command_definitions.get(cmd_name)
+
+        if command_definition is None:
+            raise ValueError(f"Unknown command '{cmd_name}'")
+
+        argument_types = command_definition.get('argument_types', {})
         
         # make sure that the argument has the correct type. By deafult all arguments will be string
         for arg_name, arg_value in arguments.items():
-            # need to see if the argument is an int, string or float
-            arg_str_format = get_argument_type(arg_name)
-            
-            # ints: b, B, ?, h, H, i, I, l, L, q, Q, n, N
-            # float: e, d, F, D 
-            # string: s, p          
-            
-            int_list = ['b', 'B', '?', 'h', 'H', 'i', 'I', 'l', 'L', 'q', 'Q', 'n', 'N']
-            float_list = ['e', 'd', 'F', 'D']
-            string_list = ['s', 'p']
-            
-            if arg_str_format in int_list:
-                arg_value = int(arg_value)
-            elif arg_str_format in float_list:
-                arg_value = float(arg_value)
-            elif arg_str_format in string_list:
-                arg_value = str(arg_value)
-            else:
-                raise ValueError(f"Unknown argument type '{arg_str_format}' for argument '{arg_name}'")
-
-            arguments[arg_name] = arg_value
+            arg_str_format = argument_types.get(arg_name)
+            arguments[arg_name] = coerce_argument_value(arg_name, arg_value, arg_str_format)
             
         print(f"=== SENDING COMMAND ===")
         print(f"Command: {cmd_name}")
@@ -189,9 +257,7 @@ def update_server_address():
             return jsonify({'success': False, 'error': 'IP and port are required'})
         
         # Update the RPC client with new address
-        new_address = (ip, int(port))
-        rpc_client.address = new_address
-        rpc_client.server = xmlrpc.client.ServerProxy(f'http://{ip}:{port}')
+        rpc_client.update_address(ip, port)
         
         return jsonify({
             'success': True,
