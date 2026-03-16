@@ -228,6 +228,17 @@ select:focus, input:focus {
     margin-bottom: 10px;
 }
 
+.command-action-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.command-action-row button {
+    flex: 1;
+    width: auto;
+}
+
 button {
     width: 100%;
     padding: 12px;
@@ -249,6 +260,26 @@ button:hover {
 
 button:active {
     transform: translateY(0);
+}
+
+button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+    transform: none;
+    box-shadow: none;
+}
+
+button:disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.direct-send-btn {
+    background: #7dd87d;
+}
+
+.direct-send-btn:hover {
+    background: #8ee88e;
 }
 
 /* Quick Command Zone */
@@ -417,6 +448,44 @@ button:active {
 
 .command-item.animating-error {
     animation: flash-error 0.8s ease-in-out forwards;
+}
+
+@keyframes builder-flash-success {
+    0% {
+        background-color: #3a3d5c;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    }
+    50% {
+        background-color: rgba(125, 216, 125, 0.22);
+        box-shadow: 0 0 24px rgba(125, 216, 125, 0.45);
+    }
+    100% {
+        background-color: #3a3d5c;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    }
+}
+
+@keyframes builder-flash-error {
+    0% {
+        background-color: #3a3d5c;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    }
+    50% {
+        background-color: rgba(214, 124, 124, 0.22);
+        box-shadow: 0 0 24px rgba(214, 124, 124, 0.45);
+    }
+    100% {
+        background-color: #3a3d5c;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    }
+}
+
+.command-builder.animating-success {
+    animation: builder-flash-success 0.8s ease-in-out forwards;
+}
+
+.command-builder.animating-error {
+    animation: builder-flash-error 0.8s ease-in-out forwards;
 }
 
 /* Status message below command */

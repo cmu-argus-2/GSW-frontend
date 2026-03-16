@@ -121,6 +121,7 @@ function selectCommand(cmd) {
     
     displayArgumentInputs();
     document.getElementById('add-command-btn').disabled = false;
+    document.getElementById('send-command-direct-btn').disabled = false;
     document.getElementById('command-info').textContent = 
         `ID: ${selectedCommand.id} | Size: ${selectedCommand.size} bytes`;
 }
@@ -337,29 +338,111 @@ function addQuickCommand(commandName, args, isPredefined = false) {
 }
 
 /**
+ * Get the currently entered argument values for the selected command
+ * @returns {object}
+ */
+function getSelectedCommandArguments() {
+    if (!selectedCommand) {
+        return {};
+    }
+
+    const args = {};
+    selectedCommand.arguments.forEach(arg => {
+        const input = document.getElementById(`arg-${arg}`);
+        args[arg] = input ? input.value : '';
+    });
+
+    return args;
+}
+
+/**
+ * Reset the command builder UI
+ */
+function resetCommandBuilder() {
+    document.getElementById('command-input').value = '';
+    document.getElementById('arguments-container').innerHTML = '';
+    document.getElementById('add-command-btn').disabled = true;
+    document.getElementById('send-command-direct-btn').disabled = true;
+    document.getElementById('command-info').textContent = '';
+
+    const directStatusElement = document.getElementById('direct-command-status');
+    if (directStatusElement) {
+        directStatusElement.textContent = '';
+        directStatusElement.className = 'command-status';
+    }
+
+    selectedCommand = null;
+    document.getElementById('command-suggestions-container').style.display = 'none';
+}
+
+/**
+ * Send a command payload to the backend
+ * @param {string} commandName - The command name
+ * @param {object} args - The command arguments
+ * @returns {Promise<object>}
+ */
+async function sendCommandRequest(commandName, args) {
+    const response = await fetch('/api/send_command', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            command: commandName,
+            arguments: args
+        })
+    });
+
+    return response.json();
+}
+
+/**
  * Add quick command
  */
 document.getElementById('add-command-btn').addEventListener('click', function() {
     if (!selectedCommand) return;
 
-    const args = {};
-    selectedCommand.arguments.forEach(arg => {
-        const input = document.getElementById(`arg-${arg}`);
-        args[arg] = input.value;
-    });
+    const args = getSelectedCommandArguments();
 
     addQuickCommand(selectedCommand.name, args, false);
-    
-    // Reset form
-    document.getElementById('command-input').value = '';
-    document.getElementById('arguments-container').innerHTML = '';
-    document.getElementById('add-command-btn').disabled = true;
-    document.getElementById('command-info').textContent = '';
-    selectedCommand = null;
-    
-    // Hide suggestions
-    document.getElementById('command-suggestions-container').style.display = 'none';
+
+    resetCommandBuilder();
 });
+
+/**
+ * Send the currently selected command directly from the builder
+ */
+async function sendSelectedCommandDirectly() {
+    if (!selectedCommand) return;
+
+    const directSendButton = document.getElementById('send-command-direct-btn');
+    const builderElement = document.querySelector('.command-builder');
+    const statusElement = document.getElementById('direct-command-status');
+    const originalLabel = directSendButton.textContent;
+
+    directSendButton.disabled = true;
+    directSendButton.textContent = 'Sending...';
+
+    try {
+        const data = await sendCommandRequest(selectedCommand.name, getSelectedCommandArguments());
+
+        if (data.success) {
+            triggerFlashAnimation(builderElement, 'success');
+            showStatusMessage(statusElement, `✅ ${selectedCommand.name} sent successfully`, 'success', 3000);
+        } else {
+            triggerFlashAnimation(builderElement, 'error');
+            showStatusMessage(statusElement, `❌ Error: ${data.error}`, 'error', 5000);
+        }
+    } catch (error) {
+        triggerFlashAnimation(builderElement, 'error');
+        showStatusMessage(statusElement, `❌ Error: ${error.message}`, 'error', 5000);
+    } finally {
+        directSendButton.textContent = originalLabel;
+        directSendButton.disabled = !selectedCommand;
+    }
+}
+
+document.getElementById('send-command-direct-btn').addEventListener('click', sendSelectedCommandDirectly);
 
 /**
  * Render quick commands to the DOM
@@ -460,18 +543,7 @@ async function sendCommand(id) {
         const statusElement = document.getElementById(`status-${id}`);
 
         // Make the API request
-        const response = await fetch('/api/send_command', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                command: item.command,
-                arguments: item.arguments
-            })
-        });
-
-        const data = await response.json();
+        const data = await sendCommandRequest(item.command, item.arguments);
         
         // Handle success response
         if (data.success) {

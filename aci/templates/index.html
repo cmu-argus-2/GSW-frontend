@@ -36,7 +36,11 @@
                     <!-- Arguments will be dynamically added here -->
                 </div>
 
-                <button id="add-command-btn" disabled>Add to Quick Commands</button>
+                <div class="command-action-row">
+                    <button id="add-command-btn" disabled>Add to Quick Commands</button>
+                    <button id="send-command-direct-btn" class="direct-send-btn" disabled>Send Selected Command</button>
+                </div>
+                <div class="command-status" id="direct-command-status"></div>
                 <div class="info-text" id="command-info"></div>
             </div>
 
