@@ -700,6 +700,19 @@ document.addEventListener('DOMContentLoaded', function() {
     // Setup command search
     const commandInput = document.getElementById('command-input');
     const suggestionsContainer = document.getElementById('command-suggestions-container');
+    const suggestionsList = document.getElementById('command-suggestions');
+
+    if (suggestionsList) {
+        suggestionsList.addEventListener('click', function(e) {
+            const suggestionItem = e.target.closest('.suggestion-item[data-index]');
+            if (!suggestionItem) return;
+
+            const index = Number.parseInt(suggestionItem.dataset.index, 10);
+            if (Number.isNaN(index) || !currentFilteredCommands[index]) return;
+
+            selectCommand(currentFilteredCommands[index]);
+        });
+    }
     
     if (commandInput) {
         // Show all commands when input is focused and empty
