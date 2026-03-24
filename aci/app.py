@@ -33,7 +33,7 @@ packet_history = []
 ground_station_active = False
 
 INT_FORMATS = {'b', 'B', '?', 'h', 'H', 'i', 'I', 'l', 'L', 'q', 'Q', 'n', 'N'}
-FLOAT_FORMATS = {'e', 'd', 'F', 'D'}
+FLOAT_FORMATS = {'e', 'd', 'F', 'D', 'f'}
 STRING_FORMATS = {'s', 'p'}
 
 
