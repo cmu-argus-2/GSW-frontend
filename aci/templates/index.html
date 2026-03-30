@@ -42,6 +42,43 @@
                 </div>
                 <div class="command-status" id="direct-command-status"></div>
                 <div class="info-text" id="command-info"></div>
+
+                <!-- Image Downlink Automation -->
+                <div class="downlink-section">
+                    <h3>Image Downlink</h3>
+
+                    <!-- Input form (visible when idle) -->
+                    <div id="downlink-form">
+                        <div class="downlink-input-row">
+                            <div class="downlink-input-group">
+                                <label for="downlink-tid">TID (0-7):</label>
+                                <input type="number" id="downlink-tid" min="0" max="7" placeholder="0" style="width:64px;">
+                            </div>
+                            <div class="downlink-input-group" style="flex:1;">
+                                <label for="downlink-imgpath">Image Path:</label>
+                                <input type="text" id="downlink-imgpath" placeholder="e.g. img0.bin">
+                            </div>
+                        </div>
+                        <button onclick="startAutoDownlink()">Start Image Downlink</button>
+                        <div class="command-status" id="downlink-form-status"></div>
+                    </div>
+
+                    <!-- Progress (visible while running) -->
+                    <div id="downlink-progress" style="display:none;">
+                        <div class="downlink-progress-bar">
+                            <div class="downlink-progress-fill" id="downlink-progress-fill" style="width:0%;"></div>
+                        </div>
+                        <div class="downlink-packet-counter" id="downlink-packet-counter">0 / 0 packets</div>
+                        <div class="downlink-status-text" id="downlink-step-text"></div>
+                        <button class="downlink-cancel-btn" onclick="cancelAutoDownlink()">Cancel</button>
+                    </div>
+
+                    <!-- Done state (visible after completion) -->
+                    <div id="downlink-done" style="display:none;">
+                        <div class="downlink-result-text" id="downlink-result-text"></div>
+                        <button onclick="resetDownlinkUI()">New Downlink</button>
+                    </div>
+                </div>
             </div>
 
             <!-- Quick Command Zone -->

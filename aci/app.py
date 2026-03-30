@@ -6,6 +6,8 @@ A simple Flask web app to build and send commands to the satellite.
 from flask import Flask, render_template, request, jsonify
 from datetime import datetime
 import json
+import threading
+import time
 
 from simple_rpc_clinet import SimpleRPCClient, address
 
@@ -31,6 +33,20 @@ packet_history = []
 
 # Ground station status
 ground_station_active = False
+
+# Automated image downlink state
+downlink_state = {
+    'running': False,
+    'tid': None,
+    'step': '',
+    'total': 0,
+    'received': 0,
+    'done': False,
+    'success': False,
+    'error': None
+}
+_downlink_stop_flag = False
+_downlink_lock = threading.Lock()
 
 INT_FORMATS = {'b', 'B', '?', 'h', 'H', 'i', 'I', 'l', 'L', 'q', 'Q', 'n', 'N'}
 FLOAT_FORMATS = {'e', 'd', 'F', 'D', 'f'}
@@ -112,6 +128,150 @@ def coerce_argument_value(arg_name, arg_value, arg_format):
     raise ValueError(
         f"Unknown argument type '{arg_format}' for argument '{arg_name}'"
     )
+
+def _run_downlink(tid, img_path):
+    """
+    Background thread that runs the full image downlink state machine:
+      CREATE_TRANS → wait INIT_TRANS → loop(GENERATE_X_PACKETS → wait ACK
+      → wait fragments stable → CONFIRM_LAST_BATCH → wait ACK) → done
+    Uses its own RPC client to avoid contention with the global rpc_client.
+    """
+    global downlink_state, _downlink_stop_flag
+
+    from simple_rpc_clinet import SimpleRPCClient, address as rpc_address
+    local_rpc = SimpleRPCClient(rpc_address)
+
+    def update_state(**kwargs):
+        with _downlink_lock:
+            downlink_state.update(kwargs)
+
+    def should_stop():
+        return _downlink_stop_flag
+
+    try:
+        # Step 1: Send CREATE_TRANS
+        update_state(step='Sending CREATE_TRANS...')
+        result = local_rpc.send_command('CREATE_TRANS', {'tid': tid, 'string_command': img_path})
+        if not result:
+            update_state(done=True, success=False,
+                         error='CREATE_TRANS rejected by backend (tid conflict or invalid path)')
+            return
+
+        # Step 2: Wait for INIT_TRANS (transaction state >= INIT = 2)
+        update_state(step='Waiting for satellite INIT_TRANS...')
+        deadline = time.time() + 30
+        number_of_packets = 0
+        while time.time() < deadline:
+            if should_stop():
+                update_state(done=True, success=False, error='Cancelled by user')
+                return
+            status = local_rpc.get_transaction_status(tid)
+            if status and status.get('found') and status.get('state', 0) >= 2:
+                number_of_packets = status['number_of_packets']
+                update_state(total=number_of_packets,
+                             step=f'Initialized: {number_of_packets} packets total')
+                break
+            time.sleep(1)
+        else:
+            update_state(done=True, success=False,
+                         error='Timeout waiting for INIT_TRANS from satellite (30s)')
+            return
+
+        if number_of_packets == 0:
+            update_state(done=True, success=False,
+                         error='Satellite reported 0 packets — check image path on satellite')
+            return
+
+        # Steps 3-5: Batch loop until all packets received
+        while True:
+            if should_stop():
+                update_state(done=True, success=False, error='Cancelled by user')
+                return
+
+            status = local_rpc.get_transaction_status(tid)
+            if not status or not status.get('found'):
+                update_state(done=True, success=False, error='Transaction disappeared from backend')
+                return
+
+            missing_count = status['missing_count']
+            received = status['received_packets']
+            update_state(received=received)
+
+            if status['state'] >= 5 or missing_count == 0:
+                break
+
+            batch_size = min(30, missing_count)
+            update_state(step=f'Requesting batch of {batch_size} packets '
+                              f'({received}/{number_of_packets} received)...')
+
+            # Send GENERATE_X_PACKETS
+            local_rpc.send_command('GENERATE_X_PACKETS', {'tid': tid, 'x': batch_size})
+
+            # Wait for ACK with rid=0 (up to 15s)
+            ack_deadline = time.time() + 15
+            while time.time() < ack_deadline:
+                if should_stop():
+                    update_state(done=True, success=False, error='Cancelled during ACK wait')
+                    return
+                ack = local_rpc.get_pending_ack()
+                if ack and ack.get('rid') == 0:
+                    break
+                time.sleep(0.3)
+
+            # Poll until received count stabilizes (3s with no change) or COMPLETED
+            update_state(step='Receiving fragments...')
+            last_received = -1
+            stable_since = None
+            poll_deadline = time.time() + 60
+            while time.time() < poll_deadline:
+                if should_stop():
+                    update_state(done=True, success=False, error='Cancelled during fragment receive')
+                    return
+                status = local_rpc.get_transaction_status(tid)
+                if not status or not status.get('found'):
+                    break
+                cur_received = status['received_packets']
+                update_state(received=cur_received)
+                if status['state'] >= 5:
+                    break
+                if cur_received == last_received:
+                    if stable_since is None:
+                        stable_since = time.time()
+                    elif time.time() - stable_since >= 3:
+                        break
+                else:
+                    last_received = cur_received
+                    stable_since = None
+                time.sleep(0.5)
+
+            # Send CONFIRM_LAST_BATCH
+            update_state(step='Sending CONFIRM_LAST_BATCH...')
+            local_rpc.send_command('CONFIRM_LAST_BATCH', {'tid': tid, 'MSB': 0, 'LSB': 0})
+
+            # Wait for ACK (up to 10s)
+            ack_deadline = time.time() + 10
+            while time.time() < ack_deadline:
+                if should_stop():
+                    update_state(done=True, success=False, error='Cancelled during confirm ACK wait')
+                    return
+                ack = local_rpc.get_pending_ack()
+                if ack and ack.get('rid') == 0:
+                    break
+                time.sleep(0.3)
+
+        # Final update
+        final_status = local_rpc.get_transaction_status(tid)
+        final_received = (final_status['received_packets']
+                          if final_status and final_status.get('found') else received)
+        update_state(received=final_received, done=True, success=True,
+                     step='Download complete!')
+
+    except Exception as e:
+        update_state(done=True, success=False, error=f'Unexpected error: {str(e)}')
+    finally:
+        with _downlink_lock:
+            downlink_state['running'] = False
+
 
 @app.route('/')
 def index():
@@ -321,6 +481,56 @@ def update_last_packet(packet_bytes):
     # Keep only last 50 packets
     if len(packet_history) > 50:
         packet_history = packet_history[:50]
+
+@app.route('/api/auto_downlink/start', methods=['POST'])
+def auto_downlink_start():
+    """Start the automated image downlink state machine in a background thread."""
+    global downlink_state, _downlink_stop_flag
+    with _downlink_lock:
+        if downlink_state['running']:
+            return jsonify({'success': False, 'error': 'Downlink already in progress'})
+
+    data = request.json
+    tid = data.get('tid')
+    img_path = (data.get('img_path') or '').strip()
+
+    if tid is None or not isinstance(tid, int) or tid < 0 or tid > 7:
+        return jsonify({'success': False, 'error': 'tid must be an integer 0-7'})
+    if not img_path:
+        return jsonify({'success': False, 'error': 'img_path is required'})
+
+    with _downlink_lock:
+        downlink_state.update({
+            'running': True,
+            'tid': tid,
+            'step': 'Starting...',
+            'total': 0,
+            'received': 0,
+            'done': False,
+            'success': False,
+            'error': None
+        })
+        _downlink_stop_flag = False
+
+    thread = threading.Thread(target=_run_downlink, args=(tid, img_path), daemon=True)
+    thread.start()
+    return jsonify({'success': True})
+
+
+@app.route('/api/auto_downlink/status', methods=['GET'])
+def auto_downlink_status():
+    """Return the current state of the automated downlink."""
+    with _downlink_lock:
+        return jsonify(dict(downlink_state))
+
+
+@app.route('/api/auto_downlink/stop', methods=['POST'])
+def auto_downlink_stop():
+    """Request the running downlink thread to stop."""
+    global _downlink_stop_flag
+    _downlink_stop_flag = True
+    return jsonify({'success': True})
+
 
 def set_ground_station_active(active=True):
     """

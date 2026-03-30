@@ -111,4 +111,11 @@ class SimpleRPCClient:
         response = self.server.get_command_definitions()
         print("Received command definitions from rpc server")
         return response
-        
+
+    def get_pending_ack(self):
+        """Pop and return the oldest pending ACK from the backend, or None if empty."""
+        return self.server.get_pending_ack()
+
+    def get_transaction_status(self, tid):
+        """Return current state of an RX transaction by tid."""
+        return self.server.get_transaction_status(tid)

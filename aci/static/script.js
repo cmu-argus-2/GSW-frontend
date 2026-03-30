@@ -3,6 +3,7 @@ let commands = [];
 let quickCommands = [];
 let selectedCommand = null;
 let packetHistory = [];
+let downlinkPollInterval = null;
 
 /**
  * Load commands from the Flask API
@@ -786,3 +787,110 @@ document.addEventListener('DOMContentLoaded', function() {
     setInterval(updateGroundStationStatus, 2000);
     updateGroundStationStatus();
 });
+
+// =============================================================================
+//  Image Downlink Automation
+// =============================================================================
+
+async function startAutoDownlink() {
+    const tidInput = document.getElementById('downlink-tid');
+    const imgPathInput = document.getElementById('downlink-imgpath');
+    const statusEl = document.getElementById('downlink-form-status');
+
+    const tid = parseInt(tidInput.value, 10);
+    const imgPath = imgPathInput.value.trim();
+
+    if (isNaN(tid) || tid < 0 || tid > 7) {
+        showStatusMessage(statusEl, 'TID must be 0-7', 'error', 4000);
+        return;
+    }
+    if (!imgPath) {
+        showStatusMessage(statusEl, 'Image path is required', 'error', 4000);
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/auto_downlink/start', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tid: tid, img_path: imgPath })
+        });
+        const data = await response.json();
+        if (data.success) {
+            document.getElementById('downlink-form').style.display = 'none';
+            document.getElementById('downlink-done').style.display = 'none';
+            document.getElementById('downlink-progress').style.display = 'block';
+            downlinkPollInterval = setInterval(pollDownlinkStatus, 1000);
+        } else {
+            showStatusMessage(statusEl, 'Error: ' + data.error, 'error', 5000);
+        }
+    } catch (error) {
+        showStatusMessage(statusEl, 'Request failed: ' + error.message, 'error', 5000);
+    }
+}
+
+async function pollDownlinkStatus() {
+    try {
+        const response = await fetch('/api/auto_downlink/status');
+        const data = await response.json();
+        updateDownlinkUI(data);
+    } catch (error) {
+        console.error('Downlink status poll error:', error);
+    }
+}
+
+function updateDownlinkUI(status) {
+    const fillEl = document.getElementById('downlink-progress-fill');
+    const counterEl = document.getElementById('downlink-packet-counter');
+    const stepEl = document.getElementById('downlink-step-text');
+    const resultEl = document.getElementById('downlink-result-text');
+
+    const total = status.total || 0;
+    const received = status.received || 0;
+    const pct = total > 0 ? Math.round((received / total) * 100) : 0;
+
+    if (fillEl) fillEl.style.width = pct + '%';
+    if (counterEl) counterEl.textContent = received + ' / ' + total + ' packets (' + pct + '%)';
+    if (stepEl) stepEl.textContent = status.step || '';
+
+    if (status.done) {
+        clearInterval(downlinkPollInterval);
+        downlinkPollInterval = null;
+
+        document.getElementById('downlink-progress').style.display = 'none';
+        document.getElementById('downlink-done').style.display = 'block';
+
+        const section = document.querySelector('.downlink-section');
+        if (status.success) {
+            if (resultEl) resultEl.textContent = 'Download complete! All ' + total + ' packets received.';
+            triggerDownlinkFlash(section, 'success');
+        } else {
+            if (resultEl) resultEl.textContent = 'Failed: ' + (status.error || 'Unknown error');
+            triggerDownlinkFlash(section, 'error');
+        }
+    }
+}
+
+async function cancelAutoDownlink() {
+    try {
+        await fetch('/api/auto_downlink/stop', { method: 'POST' });
+    } catch (error) {
+        console.error('Cancel request failed:', error);
+    }
+}
+
+function resetDownlinkUI() {
+    document.getElementById('downlink-done').style.display = 'none';
+    document.getElementById('downlink-progress').style.display = 'none';
+    document.getElementById('downlink-form').style.display = 'block';
+}
+
+function triggerDownlinkFlash(element, type) {
+    if (!element) return;
+    element.classList.remove('downlink-animating-success', 'downlink-animating-error');
+    void element.offsetWidth;
+    element.classList.add(type === 'success' ? 'downlink-animating-success' : 'downlink-animating-error');
+    setTimeout(() => {
+        element.classList.remove('downlink-animating-success', 'downlink-animating-error');
+    }, 800);
+}

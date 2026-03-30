@@ -777,3 +777,112 @@ button:disabled:hover {
 .server-control-btn:active {
     transform: translateY(0);
 }
+
+/* ===================== Image Downlink Section ===================== */
+
+.downlink-section {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 2px solid #4a4d6c;
+}
+
+.downlink-section h3 {
+    color: #8ab4f8;
+    font-size: 1em;
+    font-weight: 600;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.downlink-input-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    margin-bottom: 10px;
+}
+
+.downlink-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.downlink-input-group label {
+    font-size: 0.75em;
+    color: #999;
+}
+
+.downlink-progress-bar {
+    width: 100%;
+    height: 10px;
+    background: #4a4d6c;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 8px;
+    border: 1px solid #6c7a9b;
+}
+
+.downlink-progress-fill {
+    height: 100%;
+    background: #7dd87d;
+    border-radius: 5px;
+    transition: width 0.4s ease;
+    min-width: 0%;
+}
+
+.downlink-packet-counter {
+    font-size: 0.82em;
+    color: #a8c7fa;
+    margin-bottom: 4px;
+}
+
+.downlink-status-text {
+    font-size: 0.75em;
+    color: #888;
+    margin-bottom: 10px;
+    font-style: italic;
+    min-height: 1em;
+}
+
+.downlink-cancel-btn {
+    background: #5a3535;
+    color: #d67c7c;
+    border: 1px solid #d67c7c;
+    margin-top: 4px;
+}
+
+.downlink-cancel-btn:hover {
+    background: #d67c7c;
+    color: #1a1a2e;
+}
+
+.downlink-result-text {
+    font-size: 0.85em;
+    margin-bottom: 12px;
+    padding: 8px 10px;
+    border-radius: 4px;
+    background: #2e3250;
+    line-height: 1.4;
+}
+
+/* Flash animations for the downlink section panel */
+@keyframes downlink-flash-success {
+    0%   { box-shadow: none; }
+    50%  { background-color: rgba(125, 216, 125, 0.12); box-shadow: 0 0 20px rgba(125, 216, 125, 0.35); }
+    100% { box-shadow: none; }
+}
+
+@keyframes downlink-flash-error {
+    0%   { box-shadow: none; }
+    50%  { background-color: rgba(214, 124, 124, 0.12); box-shadow: 0 0 20px rgba(214, 124, 124, 0.35); }
+    100% { box-shadow: none; }
+}
+
+.downlink-section.downlink-animating-success {
+    animation: downlink-flash-success 0.8s ease-in-out forwards;
+}
+
+.downlink-section.downlink-animating-error {
+    animation: downlink-flash-error 0.8s ease-in-out forwards;
+}
