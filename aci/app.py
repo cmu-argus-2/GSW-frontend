@@ -34,6 +34,11 @@ packet_history = []
 # Ground station status
 ground_station_active = False
 
+# Buffer of received packets from the satellite (for display in UI)
+from collections import deque as _deque
+received_packets_buffer = _deque(maxlen=200)
+_rx_buffer_lock = threading.Lock()
+
 # Automated image downlink state
 downlink_state = {
     'running': False,
@@ -481,6 +486,20 @@ def update_last_packet(packet_bytes):
     # Keep only last 50 packets
     if len(packet_history) > 50:
         packet_history = packet_history[:50]
+
+@app.route('/api/received_packets')
+def get_received_packets():
+    """Poll the backend for new decoded packets, buffer them, and return the full buffer."""
+    try:
+        new_packets = rpc_client.get_new_packets()
+        if new_packets:
+            with _rx_buffer_lock:
+                received_packets_buffer.extend(new_packets)
+    except Exception:
+        pass  # backend may be offline; return what we have buffered
+    with _rx_buffer_lock:
+        return jsonify({'success': True, 'packets': list(received_packets_buffer)})
+
 
 @app.route('/api/auto_downlink/start', methods=['POST'])
 def auto_downlink_start():

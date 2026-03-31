@@ -2,7 +2,7 @@
 let commands = [];
 let quickCommands = [];
 let selectedCommand = null;
-let packetHistory = [];
+let sentCommandHistory = [];   // browser-only sent command log
 let downlinkPollInterval = null;
 
 /**
@@ -385,16 +385,24 @@ function resetCommandBuilder() {
 async function sendCommandRequest(commandName, args) {
     const response = await fetch('/api/send_command', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            command: commandName,
-            arguments: args
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: commandName, arguments: args })
     });
+    const data = await response.json();
+    recordSentCommand(commandName, args, data.success);
+    return data;
+}
 
-    return response.json();
+function recordSentCommand(name, args, success) {
+    const now = new Date();
+    sentCommandHistory.unshift({
+        name,
+        args,
+        success: !!success,
+        ts: now.toLocaleTimeString()
+    });
+    if (sentCommandHistory.length > 50) sentCommandHistory.length = 50;
+    renderSentCommandHistory();
 }
 
 /**
@@ -571,75 +579,121 @@ async function sendCommand(id) {
 }
 
 /**
- * Update the packet display with the latest received packet
+ * Poll the backend for new decoded packets and render the queue.
  */
 async function updatePacketDisplay() {
     try {
-        const response = await fetch('/api/last_packet');
+        const response = await fetch('/api/received_packets');
         const data = await response.json();
-        
-        const container = document.getElementById('packet-display');
-        
-        if (!data.success || !data.has_packet) {
-            container.innerHTML = '<div class="no-packet">No packets received yet.</div>';
-            return;
-        }
-
-        container.innerHTML = `
-            <div class="packet-info">
-                <div class="packet-field">
-                    <strong>Received:</strong>
-                    ${data.timestamp}
-                </div>
-                <div class="packet-field">
-                    <strong>Time Ago:</strong>
-                    <span class="time-ago">${data.seconds_ago} seconds ago</span>
-                </div>
-                <div class="packet-field">
-                    <strong>Data (Hex):</strong>
-                    <div class="packet-data">${data.hex_data}</div>
-                </div>
-            </div>
-        `;
-
-        // Update history if this is a new packet
-        if (data.has_packet && (packetHistory.length === 0 || 
-            packetHistory[0].hex_data !== data.hex_data)) {
-            packetHistory.unshift({
-                timestamp: data.timestamp,
-                hex_data: data.hex_data
-            });
-            // Keep only last 50 packets
-            if (packetHistory.length > 50) {
-                packetHistory = packetHistory.slice(0, 50);
-            }
-            renderPacketHistory();
-        }
+        if (!data.success) return;
+        renderReceivedPackets(data.packets);
     } catch (error) {
-        console.error('Error updating packet display:', error);
+        console.error('Error updating received packets:', error);
     }
 }
 
-/**
- * Render the packet history to the DOM
- */
-function renderPacketHistory() {
-    const container = document.getElementById('packet-history');
-    
-    if (packetHistory.length === 0) {
-        container.innerHTML = '<div class="no-history">No packets received yet.</div>';
+function renderReceivedPackets(packets) {
+    const container = document.getElementById('packet-display');
+    if (!packets || packets.length === 0) {
+        container.innerHTML = '<div class="no-packet">No packets received yet.</div>';
         return;
     }
 
-    container.innerHTML = packetHistory.map((packet, index) => `
-        <div class="history-item">
-            <div class="history-time">
-                <strong>#${packetHistory.length - index}</strong><br>
-                ${packet.timestamp}
+    // Most recent on top (server returns oldest-first since it extends a deque)
+    const reversed = [...packets].reverse();
+
+    container.innerHTML = reversed.map(p => formatPacketItem(p)).join('');
+}
+
+function formatPacketItem(p) {
+    const type = p.type || 'Unknown';
+    let badgeClass = 'badge-default';
+    let accentClass = '';
+    let body = '';
+
+    if (type === 'ACK') {
+        const success = p.rid === 0;
+        badgeClass = success ? 'badge-ack-ok' : 'badge-ack-err';
+        accentClass = success ? 'pkt-ack-ok' : 'pkt-ack-err';
+        body = `<span class="pkt-label">RID</span> <span class="pkt-val rid-val ${success ? 'rid-ok' : 'rid-err'}">${p.rid}</span>`;
+        if (p.args) body += ` <span class="pkt-args">${escapeHtml(p.args)}</span>`;
+    } else if (type === 'Report') {
+        badgeClass = 'badge-report';
+        accentClass = 'pkt-report';
+        const varEntries = Object.entries(p.variables || {}).slice(0, 8);
+        const varHtml = varEntries.map(([k, v]) =>
+            `<span class="pkt-var"><span class="pkt-label">${escapeHtml(k)}</span> <span class="pkt-val">${escapeHtml(v)}</span></span>`
+        ).join('');
+        const extra = Object.keys(p.variables || {}).length > 8
+            ? `<span class="pkt-more">+${Object.keys(p.variables).length - 8} more</span>` : '';
+        body = `<strong>${escapeHtml(p.name)}</strong><div class="pkt-vars">${varHtml}${extra}</div>`;
+    } else if (type === 'Command') {
+        badgeClass = 'badge-command';
+        accentClass = 'pkt-command';
+        const argHtml = Object.entries(p.arguments || {})
+            .map(([k, v]) => `<span class="pkt-var"><span class="pkt-label">${escapeHtml(k)}</span> <span class="pkt-val">${escapeHtml(v)}</span></span>`)
+            .join('');
+        body = `<strong>${escapeHtml(p.name)}</strong><div class="pkt-vars">${argHtml}</div>`;
+    } else if (type === 'Fragment') {
+        badgeClass = 'badge-fragment';
+        accentClass = 'pkt-fragment';
+        body = `<span class="pkt-label">TID</span> <span class="pkt-val">${p.tid}</span>` +
+               `&nbsp; <span class="pkt-label">SEQ</span> <span class="pkt-val">${p.seq}</span>` +
+               `&nbsp; <span class="pkt-label">${p.size}B</span>`;
+    } else if (type === 'Variable') {
+        badgeClass = 'badge-variable';
+        accentClass = 'pkt-variable';
+        body = `<span class="pkt-label">${escapeHtml(p.subsystem)}</span> ` +
+               `<strong>${escapeHtml(p.name)}</strong> = <span class="pkt-val">${escapeHtml(p.value)}</span>`;
+    }
+
+    return `
+        <div class="rx-packet-item ${accentClass}">
+            <div class="rx-packet-header">
+                <span class="rx-badge ${badgeClass}">${type}</span>
+                <span class="rx-ts">${escapeHtml(p.ts || '')}</span>
+                <span class="rx-callsign">${escapeHtml(p.callsign || '')}</span>
             </div>
-            <div class="history-data">${packet.hex_data}</div>
-        </div>
-    `).join('');
+            <div class="rx-packet-body">${body}</div>
+        </div>`;
+}
+
+function escapeHtml(str) {
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+/**
+ * Render sent command history to the history panel.
+ */
+function renderSentCommandHistory() {
+    const container = document.getElementById('packet-history');
+    if (sentCommandHistory.length === 0) {
+        container.innerHTML = '<div class="no-history">No commands sent yet.</div>';
+        return;
+    }
+    container.innerHTML = sentCommandHistory.map(cmd => {
+        const argStr = Object.keys(cmd.args || {}).length > 0
+            ? Object.entries(cmd.args).map(([k, v]) => `${escapeHtml(k)}=${escapeHtml(String(v))}`).join(', ')
+            : 'no args';
+        const statusBadge = cmd.success
+            ? '<span class="sent-badge sent-ok">OK</span>'
+            : '<span class="sent-badge sent-err">ERR</span>';
+        return `
+            <div class="history-item sent-cmd-item">
+                <div class="history-time">
+                    ${statusBadge}
+                    <span class="history-ts">${escapeHtml(cmd.ts)}</span>
+                </div>
+                <div class="history-data">
+                    <strong>${escapeHtml(cmd.name)}</strong>
+                    <div class="cmd-args-text">${argStr}</div>
+                </div>
+            </div>`;
+    }).join('');
 }
 
 /**

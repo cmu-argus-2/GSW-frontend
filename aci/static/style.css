@@ -778,6 +778,129 @@ button:disabled:hover {
     transform: translateY(0);
 }
 
+/* ===================== Received Packets Queue ===================== */
+
+.received-queue {
+    max-height: 420px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-right: 2px;
+}
+
+.rx-packet-item {
+    background: #4a4d6c;
+    border: 1px solid #6c7a9b;
+    border-left: 3px solid #6c7a9b;
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 0.82em;
+}
+
+/* ACK colors by RID */
+.pkt-ack-ok  { border-left-color: #7dd87d; background: rgba(125,216,125,0.07); }
+.pkt-ack-err { border-left-color: #d67c7c; background: rgba(214,124,124,0.07); }
+.pkt-report  { border-left-color: #8ab4f8; }
+.pkt-command { border-left-color: #f0c070; }
+.pkt-fragment{ border-left-color: #aaa; }
+.pkt-variable{ border-left-color: #b0a0f8; }
+
+.rx-packet-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 5px;
+}
+
+.rx-badge {
+    font-size: 0.72em;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 3px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.badge-ack-ok   { background: rgba(125,216,125,0.25); color: #7dd87d; border: 1px solid #7dd87d; }
+.badge-ack-err  { background: rgba(214,124,124,0.25); color: #d67c7c; border: 1px solid #d67c7c; }
+.badge-report   { background: rgba(138,180,248,0.2);  color: #8ab4f8; border: 1px solid #8ab4f8; }
+.badge-command  { background: rgba(240,192,112,0.2);  color: #f0c070; border: 1px solid #f0c070; }
+.badge-fragment { background: rgba(170,170,170,0.15); color: #aaa;    border: 1px solid #aaa; }
+.badge-variable { background: rgba(176,160,248,0.2);  color: #b0a0f8; border: 1px solid #b0a0f8; }
+.badge-default  { background: #4a4d6c; color: #ccc; border: 1px solid #6c7a9b; }
+
+.rx-ts {
+    color: #8ab4f8;
+    font-size: 0.9em;
+    font-family: 'Courier New', monospace;
+}
+
+.rx-callsign {
+    color: #666;
+    font-size: 0.85em;
+    margin-left: auto;
+    font-family: 'Courier New', monospace;
+}
+
+.rx-packet-body {
+    color: #ccc;
+    line-height: 1.5;
+}
+
+.rx-packet-body strong { color: #e0e0ff; }
+
+.pkt-vars {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.pkt-var {
+    background: #2e3250;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 0.9em;
+    white-space: nowrap;
+}
+
+.pkt-label { color: #8ab4f8; }
+.pkt-val   { color: #e0e0ff; }
+.pkt-args  { color: #aaa; font-style: italic; }
+.pkt-more  { color: #666; font-size: 0.85em; }
+
+.rid-val  { font-weight: 700; font-size: 1.05em; }
+.rid-ok   { color: #7dd87d; }
+.rid-err  { color: #d67c7c; }
+
+/* Sent command history items */
+.sent-cmd-item .history-time {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+.sent-badge {
+    font-size: 0.72em;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 3px;
+}
+
+.sent-ok  { background: rgba(125,216,125,0.2); color: #7dd87d; border: 1px solid #7dd87d; }
+.sent-err { background: rgba(214,124,124,0.2); color: #d67c7c; border: 1px solid #d67c7c; }
+
+.history-ts { color: #8ab4f8; font-size: 0.85em; }
+
+.cmd-args-text {
+    color: #888;
+    font-size: 0.88em;
+    margin-top: 3px;
+    font-family: 'Courier New', monospace;
+}
+
 /* ===================== Image Downlink Section ===================== */
 
 .downlink-section {

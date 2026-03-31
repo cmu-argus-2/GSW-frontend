@@ -119,3 +119,7 @@ class SimpleRPCClient:
     def get_transaction_status(self, tid):
         """Return current state of an RX transaction by tid."""
         return self.server.get_transaction_status(tid)
+
+    def get_new_packets(self):
+        """Drain and return all decoded packets queued since the last call."""
+        return self.server.get_new_packets()
