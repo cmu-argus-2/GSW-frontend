@@ -141,6 +141,17 @@
         </div>
     </div>
 
+    <!-- Packet Detail Overlay -->
+    <div id="packet-overlay" class="packet-overlay" style="display: none;" onclick="handleOverlayClick(event)">
+        <div class="packet-overlay-content">
+            <div class="packet-overlay-header">
+                <h3 id="overlay-title">Packet Detail</h3>
+                <button class="packet-overlay-close" onclick="closePacketOverlay()">&times;</button>
+            </div>
+            <div class="packet-overlay-body" id="overlay-body"></div>
+        </div>
+    </div>
+
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

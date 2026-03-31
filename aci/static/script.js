@@ -4,6 +4,7 @@ let quickCommands = [];
 let selectedCommand = null;
 let sentCommandHistory = [];   // browser-only sent command log
 let downlinkPollInterval = null;
+let currentRenderedPackets = [];  // last rendered packet list (for overlay)
 
 /**
  * Load commands from the Flask API
@@ -596,16 +597,17 @@ function renderReceivedPackets(packets) {
     const container = document.getElementById('packet-display');
     if (!packets || packets.length === 0) {
         container.innerHTML = '<div class="no-packet">No packets received yet.</div>';
+        currentRenderedPackets = [];
         return;
     }
 
     // Most recent on top (server returns oldest-first since it extends a deque)
-    const reversed = [...packets].reverse();
+    currentRenderedPackets = [...packets].reverse();
 
-    container.innerHTML = reversed.map(p => formatPacketItem(p)).join('');
+    container.innerHTML = currentRenderedPackets.map((p, idx) => formatPacketItem(p, idx)).join('');
 }
 
-function formatPacketItem(p) {
+function formatPacketItem(p, idx) {
     const type = p.type || 'Unknown';
     let badgeClass = 'badge-default';
     let accentClass = '';
@@ -621,17 +623,13 @@ function formatPacketItem(p) {
         badgeClass = 'badge-report';
         accentClass = 'pkt-report';
         const allEntries = Object.entries(p.variables || {});
-        const shownEntries = allEntries.slice(0, 8);
-        const hiddenEntries = allEntries.slice(8);
+        const shownEntries = allEntries.slice(0, 6);
         const shownHtml = shownEntries.map(([k, v]) =>
             `<span class="pkt-var"><span class="pkt-label">${escapeHtml(k)}</span> <span class="pkt-val">${escapeHtml(v)}</span></span>`
         ).join('');
-        const hiddenHtml = hiddenEntries.map(([k, v]) =>
-            `<span class="pkt-var"><span class="pkt-label">${escapeHtml(k)}</span> <span class="pkt-val">${escapeHtml(v)}</span></span>`
-        ).join('');
-        const extra = hiddenEntries.length > 0
-            ? `<span class="pkt-more-btn">+${hiddenEntries.length} more ▾</span><div class="pkt-extra pkt-vars">${hiddenHtml}</div>` : '';
-        body = `<strong>${escapeHtml(p.name)}</strong><div class="pkt-vars">${shownHtml}</div>${extra}`;
+        const hint = allEntries.length > 6
+            ? `<span class="pkt-more-hint">+${allEntries.length - 6} more — click to expand</span>` : '';
+        body = `<strong>${escapeHtml(p.name)}</strong><div class="pkt-vars">${shownHtml}</div>${hint}`;
     } else if (type === 'Command') {
         badgeClass = 'badge-command';
         accentClass = 'pkt-command';
@@ -653,7 +651,7 @@ function formatPacketItem(p) {
     }
 
     return `
-        <div class="rx-packet-item ${accentClass}" onclick="togglePacketExpand(this)">
+        <div class="rx-packet-item ${accentClass}" onclick="openPacketOverlay(${idx})">
             <div class="rx-packet-header">
                 <span class="rx-badge ${badgeClass}">${type}</span>
                 <span class="rx-ts">${escapeHtml(p.ts || '')}</span>
@@ -663,8 +661,79 @@ function formatPacketItem(p) {
         </div>`;
 }
 
-function togglePacketExpand(el) {
-    el.classList.toggle('pkt-expanded');
+function openPacketOverlay(idx) {
+    const p = currentRenderedPackets[idx];
+    if (!p) return;
+
+    const type = p.type || 'Unknown';
+    const overlay = document.getElementById('packet-overlay');
+    const titleEl = document.getElementById('overlay-title');
+    const bodyEl = document.getElementById('overlay-body');
+
+    titleEl.textContent = type + ' Packet';
+    if (p.ts) titleEl.textContent += '  —  ' + p.ts;
+
+    let html = '';
+
+    function field(label, value) {
+        return `<div class="overlay-field">
+            <div class="overlay-field-label">${label}</div>
+            <div class="overlay-field-value">${escapeHtml(String(value))}</div>
+        </div>`;
+    }
+
+    if (p.callsign) html += field('Callsign', p.callsign);
+
+    if (type === 'ACK') {
+        html += field('RID', p.rid + (p.rid === 0 ? '  (Success)' : '  (Error)'));
+        if (p.args) html += field('ACK Args', p.args);
+    } else if (type === 'Report') {
+        if (p.name) html += field('Report Name', p.name);
+        const entries = Object.entries(p.variables || {});
+        if (entries.length > 0) {
+            const chipsHtml = entries.map(([k, v]) =>
+                `<span class="overlay-var-chip"><span class="pkt-label">${escapeHtml(k)}</span> <span class="pkt-val">${escapeHtml(v)}</span></span>`
+            ).join('');
+            html += `<div class="overlay-field">
+                <div class="overlay-field-label">Variables (${entries.length})</div>
+                <div class="overlay-vars-grid">${chipsHtml}</div>
+            </div>`;
+        }
+    } else if (type === 'Command') {
+        if (p.name) html += field('Command Name', p.name);
+        const entries = Object.entries(p.arguments || {});
+        if (entries.length > 0) {
+            const chipsHtml = entries.map(([k, v]) =>
+                `<span class="overlay-var-chip"><span class="pkt-label">${escapeHtml(k)}</span> <span class="pkt-val">${escapeHtml(v)}</span></span>`
+            ).join('');
+            html += `<div class="overlay-field">
+                <div class="overlay-field-label">Arguments</div>
+                <div class="overlay-vars-grid">${chipsHtml}</div>
+            </div>`;
+        }
+    } else if (type === 'Fragment') {
+        html += field('TID', p.tid);
+        html += field('Sequence', p.seq);
+        html += field('Size', p.size + ' bytes');
+    } else if (type === 'Variable') {
+        html += field('Subsystem', p.subsystem);
+        html += field('Name', p.name);
+        html += field('Value', p.value);
+    }
+
+    bodyEl.innerHTML = html || '<div style="color:#666;font-style:italic;">No additional details.</div>';
+    overlay.style.display = 'flex';
+}
+
+function closePacketOverlay() {
+    document.getElementById('packet-overlay').style.display = 'none';
+}
+
+function handleOverlayClick(event) {
+    // Close if clicking the backdrop (not the content)
+    if (event.target === document.getElementById('packet-overlay')) {
+        closePacketOverlay();
+    }
 }
 
 function escapeHtml(str) {
@@ -840,6 +909,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (commandInput && !commandInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
             suggestionsContainer.style.display = 'none';
         }
+    });
+
+    // Close packet overlay on Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closePacketOverlay();
     });
     
     // Update packet display every 2 seconds
