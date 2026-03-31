@@ -330,7 +330,7 @@ function addQuickCommand(commandName, args, isPredefined = false) {
         id: Date.now() + Math.random(), // Ensure unique ID
         command: commandName,
         arguments: args,
-        timestamp: new Date().toLocaleTimeString(),
+        timestamp: new Date().toLocaleTimeString('en-GB'),
         predefined: isPredefined
     };
 
@@ -399,7 +399,7 @@ function recordSentCommand(name, args, success) {
         name,
         args,
         success: !!success,
-        ts: now.toLocaleTimeString()
+        ts: now.toLocaleTimeString('en-GB')
     });
     if (sentCommandHistory.length > 50) sentCommandHistory.length = 50;
     renderSentCommandHistory();
@@ -620,13 +620,18 @@ function formatPacketItem(p) {
     } else if (type === 'Report') {
         badgeClass = 'badge-report';
         accentClass = 'pkt-report';
-        const varEntries = Object.entries(p.variables || {}).slice(0, 8);
-        const varHtml = varEntries.map(([k, v]) =>
+        const allEntries = Object.entries(p.variables || {});
+        const shownEntries = allEntries.slice(0, 8);
+        const hiddenEntries = allEntries.slice(8);
+        const shownHtml = shownEntries.map(([k, v]) =>
             `<span class="pkt-var"><span class="pkt-label">${escapeHtml(k)}</span> <span class="pkt-val">${escapeHtml(v)}</span></span>`
         ).join('');
-        const extra = Object.keys(p.variables || {}).length > 8
-            ? `<span class="pkt-more">+${Object.keys(p.variables).length - 8} more</span>` : '';
-        body = `<strong>${escapeHtml(p.name)}</strong><div class="pkt-vars">${varHtml}${extra}</div>`;
+        const hiddenHtml = hiddenEntries.map(([k, v]) =>
+            `<span class="pkt-var"><span class="pkt-label">${escapeHtml(k)}</span> <span class="pkt-val">${escapeHtml(v)}</span></span>`
+        ).join('');
+        const extra = hiddenEntries.length > 0
+            ? `<span class="pkt-more-btn">+${hiddenEntries.length} more ▾</span><div class="pkt-extra pkt-vars">${hiddenHtml}</div>` : '';
+        body = `<strong>${escapeHtml(p.name)}</strong><div class="pkt-vars">${shownHtml}</div>${extra}`;
     } else if (type === 'Command') {
         badgeClass = 'badge-command';
         accentClass = 'pkt-command';
@@ -648,7 +653,7 @@ function formatPacketItem(p) {
     }
 
     return `
-        <div class="rx-packet-item ${accentClass}">
+        <div class="rx-packet-item ${accentClass}" onclick="togglePacketExpand(this)">
             <div class="rx-packet-header">
                 <span class="rx-badge ${badgeClass}">${type}</span>
                 <span class="rx-ts">${escapeHtml(p.ts || '')}</span>
@@ -656,6 +661,10 @@ function formatPacketItem(p) {
             </div>
             <div class="rx-packet-body">${body}</div>
         </div>`;
+}
+
+function togglePacketExpand(el) {
+    el.classList.toggle('pkt-expanded');
 }
 
 function escapeHtml(str) {

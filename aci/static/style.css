@@ -342,6 +342,8 @@ button:disabled:hover {
 /* Packet Display Zone */
 .packet-zone {
     flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .packet-info {
@@ -549,8 +551,11 @@ button:disabled:hover {
 }
 
 .history-container {
-    max-height: 400px;
+    max-height: 350px;
     overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .history-item {
@@ -781,7 +786,8 @@ button:disabled:hover {
 /* ===================== Received Packets Queue ===================== */
 
 .received-queue {
-    max-height: 420px;
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -869,6 +875,39 @@ button:disabled:hover {
 .pkt-val   { color: #e0e0ff; }
 .pkt-args  { color: #aaa; font-style: italic; }
 .pkt-more  { color: #666; font-size: 0.85em; }
+
+/* Click-to-expand for packets */
+.rx-packet-item {
+    cursor: pointer;
+}
+
+.rx-packet-item:hover {
+    border-color: #8ab4f8;
+}
+
+.pkt-more-btn {
+    display: inline-block;
+    color: #8ab4f8;
+    font-size: 0.78em;
+    margin-top: 4px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.pkt-extra {
+    display: none;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.pkt-expanded .pkt-extra {
+    display: flex;
+}
+
+.pkt-expanded .pkt-more-btn {
+    display: none;
+}
 
 .rid-val  { font-weight: 700; font-size: 1.05em; }
 .rid-ok   { color: #7dd87d; }

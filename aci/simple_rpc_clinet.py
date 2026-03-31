@@ -26,6 +26,7 @@ class SimpleRPCClient:
             f'http://{address[0]}:{address[1]}',
             allow_none=True
         )
+        self._lock = threading.Lock()  # ServerProxy is not thread-safe
 
         self.thread_running = True
         threading.Thread(target=self.ping_server, daemon=True).start()
