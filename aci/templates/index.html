@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Satellite Command Interface</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>
+            🛰️ Satellite Command Interface
+            <div class="status-indicator">
+                <div class="status-light inactive" id="gs-status-light"></div>
+                <span class="status-text" id="gs-status-text">Ground Station: Offline</span>
+            </div>
+            <button id="config-btn" class="config-btn" title="Server Configuration">⚙️</button>
+        </h1>
+        
+        <div class="zones">
+            <!-- Command Builder Zone -->
+            <div class="zone command-builder">
+                <h2>Command Builder</h2>
+                
+                <div class="form-group">
+                    <label for="command-input">Search Commands:</label>
+                    <div class="command-search-wrapper">
+                        <input type="text" id="command-input" placeholder="Type to search (e.g. 'set', 'get', 'ping')...">
+                        <div id="command-suggestions-container" class="suggestions-container" style="display: none;">
+                            <div id="command-suggestions"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="arguments-container" class="arguments-container">
+                    <!-- Arguments will be dynamically added here -->
+                </div>
+
+                <div class="command-action-row">
+                    <button id="add-command-btn" disabled>Add to Quick Commands</button>
+                    <button id="send-command-direct-btn" class="direct-send-btn" disabled>Send Selected Command</button>
+                </div>
+                <div class="command-status" id="direct-command-status"></div>
+                <div class="info-text" id="command-info"></div>
+
+                <!-- Image Downlink Automation -->
+                <div class="downlink-section">
+                    <h3>Image Downlink</h3>
+
+                    <!-- Input form (visible when idle) -->
+                    <div id="downlink-form">
+                        <div class="downlink-input-row">
+                            <div class="downlink-input-group">
+                                <label for="downlink-tid">TID (0-7):</label>
+                                <input type="number" id="downlink-tid" min="0" max="7" placeholder="0" style="width:64px;">
+                            </div>
+                            <div class="downlink-input-group" style="flex:1;">
+                                <label for="downlink-imgpath">Image Path:</label>
+                                <input type="text" id="downlink-imgpath" placeholder="e.g. img0.bin">
+                            </div>
+                        </div>
+                        <button onclick="startAutoDownlink()">Start Image Downlink</button>
+                        <div class="command-status" id="downlink-form-status"></div>
+                    </div>
+
+                    <!-- Progress (visible while running) -->
+                    <div id="downlink-progress" style="display:none;">
+                        <div class="downlink-progress-bar">
+                            <div class="downlink-progress-fill" id="downlink-progress-fill" style="width:0%;"></div>
+                        </div>
+                        <div class="downlink-packet-counter" id="downlink-packet-counter">0 / 0 packets</div>
+                        <div class="downlink-status-text" id="downlink-step-text"></div>
+                        <button class="downlink-cancel-btn" onclick="cancelAutoDownlink()">Cancel</button>
+                    </div>
+
+                    <!-- Done state (visible after completion) -->
+                    <div id="downlink-done" style="display:none;">
+                        <div class="downlink-result-text" id="downlink-result-text"></div>
+                        <button onclick="resetDownlinkUI()">New Downlink</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Command Zone -->
+            <div class="zone quick-command-zone">
+                <h2>Quick Commands</h2>
+                <div id="quick-commands">
+                    <div class="empty-state">No quick commands yet. Add a command to get started.</div>
+                </div>
+            </div>
+
+            <!-- Received Packets Zone -->
+            <div class="zone packet-zone">
+                <h2>Received Packets</h2>
+                <div id="packet-display" class="received-queue">
+                    <div class="no-packet">No packets received yet.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sent Commands History Panel -->
+        <div class="history-panel">
+            <h2>Sent Commands</h2>
+            <div id="packet-history" class="history-container">
+                <div class="no-history">No commands sent yet.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Config Modal -->
+    <div id="config-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Server Configuration</h2>
+                <button class="modal-close-btn" id="modal-close-btn">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="config-section">
+                    <h3>XML-RPC Server Settings</h3>
+                    
+                    <div class="config-input-group">
+                        <label for="server-ip">Server IP:</label>
+                        <input type="text" id="server-ip" placeholder="e.g. 172.20.70.133">
+                    </div>
+                    
+                    <div class="config-input-group">
+                        <label for="server-port">Server Port:</label>
+                        <input type="text" id="server-port" placeholder="e.g. 8000">
+                    </div>
+                    
+                    <button id="update-server-btn" class="config-update-btn">Update Server</button>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button id="start-server-btn" class="server-control-btn start-btn">▶ Start Server</button>
+                <button id="stop-server-btn" class="server-control-btn stop-btn">⏹ Stop Server</button>
+                <button id="restart-server-btn" class="server-control-btn restart-btn">🔄 Restart Server</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Packet Detail Overlay -->
+    <div id="packet-overlay" class="packet-overlay" style="display: none;" onclick="handleOverlayClick(event)">
+        <div class="packet-overlay-content">
+            <div class="packet-overlay-header">
+                <h3 id="overlay-title">Packet Detail</h3>
+                <button class="packet-overlay-close" onclick="closePacketOverlay()">&times;</button>
+            </div>
+            <div class="packet-overlay-body" id="overlay-body"></div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

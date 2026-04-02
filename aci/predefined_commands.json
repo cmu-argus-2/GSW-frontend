@@ -1,0 +1,13 @@
+[
+    {
+        "command": "FORCE_REBOOT",
+        "arguments": {}
+    },
+    {
+        "command": "SWITCH_TO_STATE",
+        "arguments": {
+            "target_state_id": "1",
+            "time_in_state": 10
+        }
+    }
+]
