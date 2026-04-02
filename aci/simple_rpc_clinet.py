@@ -40,7 +40,8 @@ class SimpleRPCClient:
     def ping_server(self):
         while self.thread_running:
             try:
-                response = self.server.ping()
+                with self._lock:
+                    response = self.server.ping()
                 print("Server is alive:", response)
                 self.server_active = True
             except Exception as e:
@@ -68,9 +69,10 @@ class SimpleRPCClient:
         
         print("Calling rpc server with command:", cmd_name, "and params:", params)
 
-        response = self.server.add_command(cmd_name, params)
+        with self._lock:
+            response = self.server.add_command(cmd_name, params)
         print("Received response from rpc server:", response)
-        
+
         return response
 
     def get_command_definitions(self):
@@ -109,18 +111,22 @@ class SimpleRPCClient:
         - floats: e, d, F, D
         - strings: s, p
         """
-        response = self.server.get_command_definitions()
+        with self._lock:
+            response = self.server.get_command_definitions()
         print("Received command definitions from rpc server")
         return response
 
     def get_pending_ack(self):
         """Pop and return the oldest pending ACK from the backend, or None if empty."""
-        return self.server.get_pending_ack()
+        with self._lock:
+            return self.server.get_pending_ack()
 
     def get_transaction_status(self, tid):
         """Return current state of an RX transaction by tid."""
-        return self.server.get_transaction_status(tid)
+        with self._lock:
+            return self.server.get_transaction_status(tid)
 
     def get_new_packets(self):
         """Drain and return all decoded packets queued since the last call."""
-        return self.server.get_new_packets()
+        with self._lock:
+            return self.server.get_new_packets()
