@@ -800,12 +800,50 @@ async function updateGroundStationStatus() {
 }
 
 /**
+ * Set the active satellite callsign and update the UI buttons.
+ */
+async function selectSatellite(callsign) {
+    try {
+        const response = await fetch('/api/satellite', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ callsign })
+        });
+        const data = await response.json();
+        if (data.success) {
+            updateSatelliteButtons(data.callsign);
+        }
+    } catch (error) {
+        console.error('Error selecting satellite:', error);
+    }
+}
+
+function updateSatelliteButtons(activeCallsign) {
+    document.querySelectorAll('.sat-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.id === `sat-btn-${activeCallsign}`);
+    });
+}
+
+async function loadCurrentSatellite() {
+    try {
+        const response = await fetch('/api/satellite');
+        const data = await response.json();
+        if (data.success && data.callsign) {
+            updateSatelliteButtons(data.callsign);
+        }
+    } catch (error) {
+        console.error('Error loading current satellite:', error);
+    }
+}
+
+/**
  * Initialize the page when document is loaded
  */
 document.addEventListener('DOMContentLoaded', function() {
     // Load initial data
     loadCommands();
     loadPredefinedCommands();
+    loadCurrentSatellite();
     
     // Setup config modal event listeners
     const configBtn = document.getElementById('config-btn');

@@ -53,6 +53,58 @@ h1 {
     transform: scale(0.95);
 }
 
+.sat-selector {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: #4a4d6c;
+    border-radius: 20px;
+    border: 1px solid #6c7a9b;
+}
+
+.sat-selector-label {
+    font-size: 0.55em;
+    color: #aaa;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 500;
+}
+
+.sat-btn {
+    width: auto;
+    padding: 4px 10px;
+    background: #3a3d5c;
+    border: 1px solid #6c7a9b;
+    border-radius: 12px;
+    color: #aaa;
+    font-size: 0.55em;
+    font-weight: 600;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.sat-btn:hover {
+    background: #5a5d7c;
+    color: #e0e0e0;
+    transform: none;
+    box-shadow: none;
+}
+
+.sat-btn.active {
+    background: #8ab4f8;
+    border-color: #8ab4f8;
+    color: #2b2d42;
+}
+
+.sat-btn.active:hover {
+    background: #a8c7fa;
+    transform: none;
+    box-shadow: none;
+}
+
 .status-indicator {
     display: flex;
     align-items: center;

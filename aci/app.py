@@ -209,6 +209,8 @@ def _run_downlink(tid, img_path):
             update_state(step=f'Requesting batch of {batch_size} packets '
                               f'({received}/{number_of_packets} received)...')
 
+            received_before_generate = received
+
             # Send GENERATE_X_PACKETS
             local_rpc.send_command('GENERATE_X_PACKETS', {'tid': tid, 'x': batch_size})
 
@@ -249,9 +251,48 @@ def _run_downlink(tid, img_path):
                     stable_since = None
                 time.sleep(0.5)
 
+            # After the wait, re-read status for accurate counts
+            status = local_rpc.get_transaction_status(tid)
+            if not status or not status.get('found'):
+                update_state(done=True, success=False, error='Transaction disappeared from backend')
+                return
+
+            # Fall back to GET_SINGLE_PACKET only when:
+            #   1. The batch we just requested was already small (< 30) — meaning we're at the tail end
+            #   2. GENERATE made no progress — satellite thinks those packets were already sent
+            if (batch_size < 30
+                    and status['received_packets'] == received_before_generate
+                    and status['missing_count'] > 0
+                    and status['state'] < 5):
+                missing_seqs = status.get('missing_fragments', [])
+                update_state(step=f'No progress from GENERATE — fetching {len(missing_seqs)} '
+                                  f'packets individually...')
+                for seq_num in missing_seqs:
+                    if should_stop():
+                        update_state(done=True, success=False, error='Cancelled during single-packet fetch')
+                        return
+                    update_state(step=f'Requesting single packet seq={seq_num} '
+                                      f'({status["received_packets"]}/{number_of_packets} received)...')
+                    local_rpc.send_command('GET_SINGLE_PACKET', {'tid': tid, 'seq_number': seq_num})
+                    # Wait up to 10s for this fragment to arrive
+                    frag_deadline = time.time() + 10
+                    prev_recv = status['received_packets']
+                    while time.time() < frag_deadline:
+                        if should_stop():
+                            update_state(done=True, success=False, error='Cancelled during single-packet fetch')
+                            return
+                        s = local_rpc.get_transaction_status(tid)
+                        if s and s.get('found') and s['received_packets'] > prev_recv:
+                            status = s
+                            update_state(received=s['received_packets'])
+                            break
+                        time.sleep(0.5)
+                # Re-evaluate at top of loop; skip CONFIRM_LAST_BATCH
+                continue
+
             # Send CONFIRM_LAST_BATCH
             update_state(step='Sending CONFIRM_LAST_BATCH...')
-            local_rpc.send_command('CONFIRM_LAST_BATCH', {'tid': tid, 'MSB': 0, 'LSB': 0})
+            local_rpc.send_command('CONFIRM_LAST_BATCH', {'tid': tid, 'bitmap_high': 0, 'bitmap_low': 0})
 
             # Wait for ACK (up to 10s)
             ack_deadline = time.time() + 10
@@ -409,6 +450,28 @@ def toggle_ground_station():
         'success': True,
         'active': ground_station_active
     })
+
+@app.route('/api/satellite', methods=['GET'])
+def get_satellite():
+    """Return the currently selected satellite callsign."""
+    try:
+        callsign = rpc_client.get_sc_callsign()
+        return jsonify({'success': True, 'callsign': callsign})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/satellite', methods=['POST'])
+def set_satellite():
+    """Set the active satellite callsign."""
+    try:
+        data = request.json
+        callsign = data.get('callsign', '').strip()
+        if not callsign:
+            return jsonify({'success': False, 'error': 'callsign is required'})
+        rpc_client.set_sc_callsign(callsign)
+        return jsonify({'success': True, 'callsign': callsign})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
 
 @app.route('/api/update_server_address', methods=['POST'])
 def update_server_address():

@@ -130,3 +130,13 @@ class SimpleRPCClient:
         """Drain and return all decoded packets queued since the last call."""
         with self._lock:
             return self.server.get_new_packets()
+
+    def set_sc_callsign(self, callsign):
+        """Set the active satellite callsign on the backend."""
+        with self._lock:
+            return self.server.set_sc_callsign(callsign)
+
+    def get_sc_callsign(self):
+        """Return the currently selected satellite callsign from the backend."""
+        with self._lock:
+            return self.server.get_sc_callsign()
