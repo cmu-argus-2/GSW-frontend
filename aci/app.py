@@ -273,7 +273,7 @@ def _run_downlink(tid, img_path):
                         return
                     update_state(step=f'Requesting single packet seq={seq_num} '
                                       f'({status["received_packets"]}/{number_of_packets} received)...')
-                    local_rpc.send_command('GET_SINGLE_PACKET', {'tid': tid, 'seq_number': seq_num})
+                    local_rpc.send_command('GENERATE_SINGLE_PACKET', {'tid': tid, 'seq_number': seq_num})
                     # Wait up to 10s for this fragment to arrive
                     frag_deadline = time.time() + 10
                     prev_recv = status['received_packets']
