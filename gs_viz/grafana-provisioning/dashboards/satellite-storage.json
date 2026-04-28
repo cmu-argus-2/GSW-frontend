@@ -581,10 +581,10 @@
   "schemaVersion": 39,
   "tags": ["satellite", "storage", "telemetry"],
   "templating": {"list": []},
-  "time": {"from": "now-24h", "to": "now"},
+  "time": {"from": "now-30m", "to": "now"},
   "timepicker": {},
   "timezone": "",
-  "title": "Satellite Storage Dashboard",
+  "title": "Satellite Storage",
   "uid": "storage-dashboard",
   "version": 1
 }
