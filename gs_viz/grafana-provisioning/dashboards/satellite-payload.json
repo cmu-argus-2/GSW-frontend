@@ -174,7 +174,23 @@
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "thresholds" },
-          "mappings": [],
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": { "text": "IDLE" },
+                "1": { "text": "WATCHING" },
+                "2": { "text": "BOOTING" },
+                "3": { "text": "ACTIVE" },
+                "4": { "text": "PROCESSING" },
+                "5": { "text": "FINISHED" },
+                "6": { "text": "DOWNLOAD" },
+                "7": { "text": "OFF" },
+                "8": { "text": "SUCCESS" },
+                "9": { "text": "FAIL" }
+              }
+            }
+          ],
           "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] },
           "unit": "none"
         },
@@ -208,7 +224,23 @@
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "thresholds" },
-          "mappings": [],
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": { "text": "IDLE" },
+                "1": { "text": "CAPTURING" },
+                "2": { "text": "RUNNING" },
+                "3": { "text": "TURNING_ON" },
+                "4": { "text": "DOWNSCALING" },
+                "5": { "text": "PREFILTERING" },
+                "6": { "text": "DOWNLOAD" },
+                "7": { "text": "OFF" },
+                "8": { "text": "FAIL" },
+                "9": { "text": "INFERENCE" }
+              }
+            }
+          ],
           "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] },
           "unit": "none"
         },
