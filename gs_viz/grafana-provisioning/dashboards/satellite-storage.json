@@ -67,8 +67,8 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 6,
-        "w": 4,
+        "h": 3,
+        "w": 3,
         "x": 0,
         "y": 0
       },
@@ -76,12 +76,10 @@
       "options": {
         "colorMode": "value",
         "graphMode": "none",
-        "justifyMode": "auto",
+        "justifyMode": "center",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -124,21 +122,19 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 6,
-        "w": 4,
-        "x": 4,
+        "h": 3,
+        "w": 3,
+        "x": 3,
         "y": 0
       },
       "id": 2,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
-        "justifyMode": "auto",
+        "justifyMode": "center",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -149,11 +145,11 @@
       "pluginVersion": "12.1.0",
       "targets": [
         {
-          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"CDH\")\n  |> filter(fn: (r) => r[\"_field\"] == \"TIME\")\n  |> map(fn: (r) => ({ r with _value: int(v: r._value) * 1000 }))\n  |> last()",
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"CDH\")\n  |> filter(fn: (r) => r[\"_field\"] == \"TIME\")\n  |> last()",
           "refId": "A"
         }
       ],
-      "title": "Packet Time",
+      "title": "System Time",
       "type": "stat"
     },
     {
@@ -189,21 +185,19 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 6,
-        "w": 4,
-        "x": 8,
+        "h": 3,
+        "w": 3,
+        "x": 6,
         "y": 0
       },
       "id": 3,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
-        "justifyMode": "auto",
+        "justifyMode": "center",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -246,21 +240,19 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 6,
-        "w": 4,
-        "x": 12,
+        "h": 3,
+        "w": 3,
+        "x": 9,
         "y": 0
       },
       "id": 4,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
-        "justifyMode": "auto",
+        "justifyMode": "center",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -271,7 +263,7 @@
       "pluginVersion": "12.1.0",
       "targets": [
         {
-          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"CDH\")\n  |> filter(fn: (r) => r[\"_field\"] == \"SD_TOTAL_USAGE\")\n  |> last()",
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> filter(fn: (r) => r[\"_field\"] == \"SD_TOTAL_USAGE\")\n  |> last()",
           "refId": "A"
         }
       ],
@@ -311,21 +303,19 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 6,
-        "w": 4,
-        "x": 16,
+        "h": 3,
+        "w": 3,
+        "x": 12,
         "y": 0
       },
       "id": 5,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
-        "justifyMode": "auto",
+        "justifyMode": "center",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -368,21 +358,19 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 6,
-        "w": 4,
-        "x": 20,
+        "h": 3,
+        "w": 3,
+        "x": 15,
         "y": 0
       },
       "id": 6,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
-        "justifyMode": "auto",
+        "justifyMode": "center",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -425,21 +413,19 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 6,
-        "w": 4,
-        "x": 0,
-        "y": 6
+        "h": 3,
+        "w": 3,
+        "x": 18,
+        "y": 0
       },
       "id": 7,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
-        "justifyMode": "auto",
+        "justifyMode": "center",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -498,21 +484,19 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 6,
-        "w": 4,
-        "x": 4,
-        "y": 6
+        "h": 3,
+        "w": 3,
+        "x": 21,
+        "y": 0
       },
       "id": 8,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
-        "justifyMode": "auto",
+        "justifyMode": "center",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -538,203 +522,21 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              }
-            ]
-          },
-          "unit": "decbytes"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 4,
-        "x": 8,
-        "y": 6
-      },
-      "id": 9,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "12.1.0",
-      "targets": [
-        {
-          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"CDH\")\n  |> filter(fn: (r) => r[\"_field\"] == \"SD_USAGE\")\n  |> last()",
-          "refId": "A"
-        }
-      ],
-      "title": "SD Usage Counter",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "influxdb"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
             "mode": "palette-classic"
           },
           "custom": {
-            "drawStyle": "line",
-            "fillOpacity": 18,
+            "drawStyle": "bars",
+            "fillOpacity": 50,
             "lineInterpolation": "linear",
-            "lineWidth": 2,
-            "showPoints": "never"
+            "lineWidth": 1,
+            "showPoints": "auto"
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": 0
-              },
-              {
-                "color": "yellow",
-                "value": 80
-              },
-              {
-                "color": "red",
-                "value": 95
-              }
-            ]
-          },
-          "unit": "percent"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 12
-      },
-      "id": 10,
-      "options": {
-        "legend": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "12.1.0",
-      "targets": [
-        {
-          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"CDH\")\n  |> filter(fn: (r) => r[\"_field\"] == \"CURRENT_RAM_USAGE\")",
-          "refId": "A"
-        }
-      ],
-      "title": "RAM Usage Trend",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "influxdb"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "drawStyle": "line",
-            "fillOpacity": 18,
-            "lineInterpolation": "linear",
-            "lineWidth": 2,
-            "showPoints": "never"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              }
-            ]
-          },
-          "unit": "decbytes"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 12
-      },
-      "id": 11,
-      "options": {
-        "legend": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "12.1.0",
-      "targets": [
-        {
-          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"CDH\")\n  |> filter(fn: (r) => r[\"_field\"] == \"SD_TOTAL_USAGE\")",
-          "refId": "A"
-        }
-      ],
-      "title": "Total Storage Used Trend",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "influxdb"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
+                "color": "blue",
                 "value": 0
               }
             ]
@@ -744,57 +546,33 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 10,
-        "w": 24,
+        "h": 8,
+        "w": 12,
         "x": 0,
-        "y": 20
+        "y": 3
       },
-      "id": 12,
+      "id": 9,
       "options": {
-        "displayMode": "gradient",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
         },
-        "showUnfilled": true
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "pluginVersion": "12.1.0",
       "targets": [
         {
-          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"CDH\")\n  |> filter(fn: (r) => r[\"_field\"] == \"CDH_NUM_FILES\")\n  |> last()",
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> filter(fn: (r) => r[\"_field\"] == \"CDH_DIR_SIZE\" or r[\"_field\"] == \"EPS_DIR_SIZE\" or r[\"_field\"] == \"ADCS_DIR_SIZE\" or r[\"_field\"] == \"COMMS_DIR_SIZE\" or r[\"_field\"] == \"GPS_DIR_SIZE\" or r[\"_field\"] == \"CMD_LOGS_DIR_SIZE\")\n  |> last()",
           "refId": "A"
-        },
-        {
-          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"CDH\")\n  |> filter(fn: (r) => r[\"_field\"] == \"EPS_NUM_FILES\")\n  |> last()",
-          "refId": "B"
-        },
-        {
-          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"CDH\")\n  |> filter(fn: (r) => r[\"_field\"] == \"ADCS_NUM_FILES\")\n  |> last()",
-          "refId": "C"
-        },
-        {
-          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"CDH\")\n  |> filter(fn: (r) => r[\"_field\"] == \"COMMS_NUM_FILES\")\n  |> last()",
-          "refId": "D"
-        },
-        {
-          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"CDH\")\n  |> filter(fn: (r) => r[\"_field\"] == \"GPS_NUM_FILES\")\n  |> last()",
-          "refId": "E"
-        },
-        {
-          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"CDH\")\n  |> filter(fn: (r) => r[\"_field\"] == \"PAYLOAD_NUM_FILES\")\n  |> last()",
-          "refId": "F"
-        },
-        {
-          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"CDH\")\n  |> filter(fn: (r) => r[\"_field\"] == \"CMD_LOGS_NUM_FILES\")\n  |> last()",
-          "refId": "G"
         }
       ],
-      "title": "File Count Breakdown",
-      "type": "bargauge"
+      "title": "Storage by Subsystem (Bytes)",
+      "type": "timeseries"
     },
     {
       "datasource": {
@@ -806,81 +584,124 @@
           "color": {
             "mode": "palette-classic"
           },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": [],
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 3
+      },
+      "id": 10,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": true,
+          "values": ["value"]
+        },
+        "pieType": "pie",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.1.0",
+      "targets": [
+        {
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> filter(fn: (r) => r[\"_field\"] == \"CDH_DIR_SIZE\" or r[\"_field\"] == \"EPS_DIR_SIZE\" or r[\"_field\"] == \"ADCS_DIR_SIZE\" or r[\"_field\"] == \"COMMS_DIR_SIZE\" or r[\"_field\"] == \"GPS_DIR_SIZE\" or r[\"_field\"] == \"PAYLOAD_DIR_SIZE\" or r[\"_field\"] == \"CMD_LOGS_DIR_SIZE\")\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Storage Distribution by Subsystem",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green",
-                "value": 0
+                "value": null
               }
             ]
-          },
-          "unit": "decbytes"
+          }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Size (Bytes)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bytes"
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 30
+        "y": 11
       },
-      "id": 13,
+      "id": 11,
       "options": {
-        "displayMode": "gradient",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+        "footer": {
+          "countRows": false,
           "fields": "",
-          "values": false
+          "reducer": ["sum"],
+          "show": false
         },
-        "showUnfilled": true
+        "showHeader": true,
+        "sortBy": []
       },
       "pluginVersion": "12.1.0",
       "targets": [
         {
-          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"CDH\")\n  |> filter(fn: (r) => r[\"_field\"] == \"CDH_DIR_SIZE\")\n  |> last()",
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> map(fn: (r) => ({Subsystem: \"CDH\", Files: r.CDH_NUM_FILES, Size: r.CDH_DIR_SIZE}))\n  |> union(other: (from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> map(fn: (r) => ({Subsystem: \"EPS\", Files: r.EPS_NUM_FILES, Size: r.EPS_DIR_SIZE}))))\n  |> union(other: (from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> map(fn: (r) => ({Subsystem: \"ADCS\", Files: r.ADCS_NUM_FILES, Size: r.ADCS_DIR_SIZE}))))\n  |> union(other: (from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> map(fn: (r) => ({Subsystem: \"COMMS\", Files: r.COMMS_NUM_FILES, Size: r.COMMS_DIR_SIZE}))))\n  |> union(other: (from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> map(fn: (r) => ({Subsystem: \"GPS\", Files: r.GPS_NUM_FILES, Size: r.GPS_DIR_SIZE}))))\n  |> union(other: (from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> map(fn: (r) => ({Subsystem: \"PAYLOAD\", Files: r.PAYLOAD_NUM_FILES, Size: r.PAYLOAD_DIR_SIZE}))))\n  |> union(other: (from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> map(fn: (r) => ({Subsystem: \"CMD_LOGS\", Files: r.CMD_LOGS_NUM_FILES, Size: r.CMD_LOGS_DIR_SIZE}))))\n  |> sort(columns: [\"Subsystem\"])",
           "refId": "A"
-        },
-        {
-          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"CDH\")\n  |> filter(fn: (r) => r[\"_field\"] == \"EPS_DIR_SIZE\")\n  |> last()",
-          "refId": "B"
-        },
-        {
-          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"CDH\")\n  |> filter(fn: (r) => r[\"_field\"] == \"ADCS_DIR_SIZE\")\n  |> last()",
-          "refId": "C"
-        },
-        {
-          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"CDH\")\n  |> filter(fn: (r) => r[\"_field\"] == \"COMMS_DIR_SIZE\")\n  |> last()",
-          "refId": "D"
-        },
-        {
-          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"CDH\")\n  |> filter(fn: (r) => r[\"_field\"] == \"GPS_DIR_SIZE\")\n  |> last()",
-          "refId": "E"
-        },
-        {
-          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"CDH\")\n  |> filter(fn: (r) => r[\"_field\"] == \"PAYLOAD_DIR_SIZE\")\n  |> last()",
-          "refId": "F"
-        },
-        {
-          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"CDH\")\n  |> filter(fn: (r) => r[\"_field\"] == \"CMD_LOGS_DIR_SIZE\")\n  |> last()",
-          "refId": "G"
         }
       ],
-      "title": "Directory Size Breakdown",
-      "type": "bargauge"
+      "title": "Storage Details by Subsystem",
+      "type": "table"
     }
   ],
-  "refresh": "30s",
+  "refresh": "10s",
   "schemaVersion": 39,
-  "style": "dark",
   "tags": [
     "satellite",
     "storage",
-    "cdh",
     "telemetry"
   ],
   "templating": {
@@ -890,32 +711,9 @@
     "from": "now-24h",
     "to": "now"
   },
-  "timepicker": {
-    "refresh_intervals": [
-      "5s",
-      "30s",
-      "1m",
-      "5m",
-      "15m",
-      "1h",
-      "6h",
-      "12h",
-      "1d"
-    ],
-    "time_options": [
-      "5m",
-      "15m",
-      "1h",
-      "6h",
-      "12h",
-      "24h",
-      "7d",
-      "30d"
-    ]
-  },
-  "timezone": "browser",
-  "title": "Satellite Storage",
-  "uid": "sat-storage",
-  "version": 1,
-  "weekStart": ""
+  "timepicker": {},
+  "timezone": "",
+  "title": "Satellite Storage Dashboard",
+  "uid": "storage-dashboard",
+  "version": 1
 }
