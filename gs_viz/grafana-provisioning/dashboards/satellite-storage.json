@@ -35,54 +35,30 @@
           "mappings": [
             {
               "options": {
-                "0": {
-                  "text": "STARTUP"
-                },
-                "1": {
-                  "text": "DETUMBLING"
-                },
-                "2": {
-                  "text": "NOMINAL"
-                },
-                "3": {
-                  "text": "EXPERIMENT"
-                },
-                "4": {
-                  "text": "LOW_POWER"
-                }
+                "0": {"text": "STARTUP"},
+                "1": {"text": "DETUMBLING"},
+                "2": {"text": "NOMINAL"},
+                "3": {"text": "EXPERIMENT"},
+                "4": {"text": "LOW_POWER"}
               },
               "type": "value"
             }
           ],
           "thresholds": {
             "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              }
-            ]
+            "steps": [{"color": "green", "value": 0}]
           }
         },
         "overrides": []
       },
-      "gridPos": {
-        "h": 3,
-        "w": 3,
-        "x": 0,
-        "y": 0
-      },
+      "gridPos": {"h": 3, "w": 3, "x": 0, "y": 0},
       "id": 1,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "center",
         "orientation": "auto",
-        "reduceOptions": {
-          "calcs": ["lastNotNull"],
-          "fields": "",
-          "values": false
-        },
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
         "showPercentChange": false,
         "textMode": "auto",
         "wideLayout": true
@@ -98,46 +74,24 @@
       "type": "stat"
     },
     {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "influxdb"
-      },
+      "datasource": {"type": "influxdb", "uid": "influxdb"},
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
+          "color": {"mode": "thresholds"},
           "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              }
-            ]
-          },
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": 0}]},
           "unit": "dateTimeAsIso"
         },
         "overrides": []
       },
-      "gridPos": {
-        "h": 3,
-        "w": 3,
-        "x": 3,
-        "y": 0
-      },
+      "gridPos": {"h": 3, "w": 3, "x": 3, "y": 0},
       "id": 2,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "center",
         "orientation": "auto",
-        "reduceOptions": {
-          "calcs": ["lastNotNull"],
-          "fields": "",
-          "values": false
-        },
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
         "showPercentChange": false,
         "textMode": "auto",
         "wideLayout": true
@@ -153,54 +107,31 @@
       "type": "stat"
     },
     {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "influxdb"
-      },
+      "datasource": {"type": "influxdb", "uid": "influxdb"},
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
+          "color": {"mode": "thresholds"},
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {
-                "color": "green",
-                "value": 0
-              },
-              {
-                "color": "yellow",
-                "value": 80
-              },
-              {
-                "color": "red",
-                "value": 95
-              }
+              {"color": "green", "value": 0},
+              {"color": "yellow", "value": 80},
+              {"color": "red", "value": 95}
             ]
           },
           "unit": "percent"
         },
         "overrides": []
       },
-      "gridPos": {
-        "h": 3,
-        "w": 3,
-        "x": 6,
-        "y": 0
-      },
+      "gridPos": {"h": 3, "w": 3, "x": 6, "y": 0},
       "id": 3,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "center",
         "orientation": "auto",
-        "reduceOptions": {
-          "calcs": ["lastNotNull"],
-          "fields": "",
-          "values": false
-        },
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
         "showPercentChange": false,
         "textMode": "auto",
         "wideLayout": true
@@ -216,46 +147,24 @@
       "type": "stat"
     },
     {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "influxdb"
-      },
+      "datasource": {"type": "influxdb", "uid": "influxdb"},
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
+          "color": {"mode": "thresholds"},
           "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              }
-            ]
-          },
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": 0}]},
           "unit": "decbytes"
         },
         "overrides": []
       },
-      "gridPos": {
-        "h": 3,
-        "w": 3,
-        "x": 9,
-        "y": 0
-      },
+      "gridPos": {"h": 3, "w": 3, "x": 9, "y": 0},
       "id": 4,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "center",
         "orientation": "auto",
-        "reduceOptions": {
-          "calcs": ["lastNotNull"],
-          "fields": "",
-          "values": false
-        },
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
         "showPercentChange": false,
         "textMode": "auto",
         "wideLayout": true
@@ -271,54 +180,31 @@
       "type": "stat"
     },
     {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "influxdb"
-      },
+      "datasource": {"type": "influxdb", "uid": "influxdb"},
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
+          "color": {"mode": "thresholds"},
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {
-                "color": "green",
-                "value": 0
-              },
-              {
-                "color": "yellow",
-                "value": 5
-              },
-              {
-                "color": "red",
-                "value": 10
-              }
+              {"color": "green", "value": 0},
+              {"color": "yellow", "value": 5},
+              {"color": "red", "value": 10}
             ]
           },
           "unit": "none"
         },
         "overrides": []
       },
-      "gridPos": {
-        "h": 3,
-        "w": 3,
-        "x": 12,
-        "y": 0
-      },
+      "gridPos": {"h": 3, "w": 3, "x": 12, "y": 0},
       "id": 5,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "center",
         "orientation": "auto",
-        "reduceOptions": {
-          "calcs": ["lastNotNull"],
-          "fields": "",
-          "values": false
-        },
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
         "showPercentChange": false,
         "textMode": "auto",
         "wideLayout": true
@@ -334,46 +220,24 @@
       "type": "stat"
     },
     {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "influxdb"
-      },
+      "datasource": {"type": "influxdb", "uid": "influxdb"},
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
+          "color": {"mode": "thresholds"},
           "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              }
-            ]
-          },
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": 0}]},
           "unit": "none"
         },
         "overrides": []
       },
-      "gridPos": {
-        "h": 3,
-        "w": 3,
-        "x": 15,
-        "y": 0
-      },
+      "gridPos": {"h": 3, "w": 3, "x": 15, "y": 0},
       "id": 6,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "center",
         "orientation": "auto",
-        "reduceOptions": {
-          "calcs": ["lastNotNull"],
-          "fields": "",
-          "values": false
-        },
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
         "showPercentChange": false,
         "textMode": "auto",
         "wideLayout": true
@@ -389,46 +253,24 @@
       "type": "stat"
     },
     {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "influxdb"
-      },
+      "datasource": {"type": "influxdb", "uid": "influxdb"},
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
+          "color": {"mode": "thresholds"},
           "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              }
-            ]
-          },
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": 0}]},
           "unit": "none"
         },
         "overrides": []
       },
-      "gridPos": {
-        "h": 3,
-        "w": 3,
-        "x": 18,
-        "y": 0
-      },
+      "gridPos": {"h": 3, "w": 3, "x": 18, "y": 0},
       "id": 7,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "center",
         "orientation": "auto",
-        "reduceOptions": {
-          "calcs": ["lastNotNull"],
-          "fields": "",
-          "values": false
-        },
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
         "showPercentChange": false,
         "textMode": "auto",
         "wideLayout": true
@@ -444,62 +286,32 @@
       "type": "stat"
     },
     {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "influxdb"
-      },
+      "datasource": {"type": "influxdb", "uid": "influxdb"},
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
+          "color": {"mode": "thresholds"},
           "mappings": [
-            {
-              "options": {
-                "0": {
-                  "text": "CLEAR"
-                },
-                "1": {
-                  "text": "ACTIVE"
-                }
-              },
-              "type": "value"
-            }
+            {"options": {"0": {"text": "CLEAR"}, "1": {"text": "ACTIVE"}}, "type": "value"}
           ],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {
-                "color": "green",
-                "value": 0
-              },
-              {
-                "color": "red",
-                "value": 1
-              }
+              {"color": "green", "value": 0},
+              {"color": "red", "value": 1}
             ]
           },
           "unit": "none"
         },
         "overrides": []
       },
-      "gridPos": {
-        "h": 3,
-        "w": 3,
-        "x": 21,
-        "y": 0
-      },
+      "gridPos": {"h": 3, "w": 3, "x": 21, "y": 0},
       "id": 8,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "center",
         "orientation": "auto",
-        "reduceOptions": {
-          "calcs": ["lastNotNull"],
-          "fields": "",
-          "values": false
-        },
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
         "showPercentChange": false,
         "textMode": "auto",
         "wideLayout": true
@@ -515,15 +327,10 @@
       "type": "stat"
     },
     {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "influxdb"
-      },
+      "datasource": {"type": "influxdb", "uid": "influxdb"},
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
+          "color": {"mode": "palette-classic"},
           "custom": {
             "drawStyle": "bars",
             "fillOpacity": 50,
@@ -532,25 +339,12 @@
             "showPoints": "auto"
           },
           "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "blue",
-                "value": 0
-              }
-            ]
-          },
-          "unit": "none"
+          "thresholds": {"mode": "absolute", "steps": [{"color": "blue", "value": 0}]},
+          "unit": "bytes"
         },
         "overrides": []
       },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 3
-      },
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 3},
       "id": 9,
       "options": {
         "legend": {
@@ -559,31 +353,54 @@
           "placement": "bottom",
           "showLegend": true
         },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
+        "tooltip": {"mode": "single", "sort": "none"}
       },
       "pluginVersion": "12.1.0",
       "targets": [
         {
-          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> filter(fn: (r) => r[\"_field\"] == \"CDH_DIR_SIZE\" or r[\"_field\"] == \"EPS_DIR_SIZE\" or r[\"_field\"] == \"ADCS_DIR_SIZE\" or r[\"_field\"] == \"COMMS_DIR_SIZE\" or r[\"_field\"] == \"GPS_DIR_SIZE\" or r[\"_field\"] == \"CMD_LOGS_DIR_SIZE\")\n  |> last()",
-          "refId": "A"
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> filter(fn: (r) => r[\"_field\"] == \"CDH_DIR_SIZE\")",
+          "refId": "A",
+          "legendAlias": "CDH"
+        },
+        {
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> filter(fn: (r) => r[\"_field\"] == \"EPS_DIR_SIZE\")",
+          "refId": "B",
+          "legendAlias": "EPS"
+        },
+        {
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> filter(fn: (r) => r[\"_field\"] == \"ADCS_DIR_SIZE\")",
+          "refId": "C",
+          "legendAlias": "ADCS"
+        },
+        {
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> filter(fn: (r) => r[\"_field\"] == \"COMMS_DIR_SIZE\")",
+          "refId": "D",
+          "legendAlias": "COMMS"
+        },
+        {
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> filter(fn: (r) => r[\"_field\"] == \"GPS_DIR_SIZE\")",
+          "refId": "E",
+          "legendAlias": "GPS"
+        },
+        {
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> filter(fn: (r) => r[\"_field\"] == \"PAYLOAD_DIR_SIZE\")",
+          "refId": "F",
+          "legendAlias": "PAYLOAD"
+        },
+        {
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> filter(fn: (r) => r[\"_field\"] == \"CMD_LOGS_DIR_SIZE\")",
+          "refId": "G",
+          "legendAlias": "CMD_LOGS"
         }
       ],
-      "title": "Storage by Subsystem (Bytes)",
+      "title": "Directory Size Breakdown",
       "type": "timeseries"
     },
     {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "influxdb"
-      },
+      "datasource": {"type": "influxdb", "uid": "influxdb"},
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
+          "color": {"mode": "palette-classic"},
           "custom": {
             "hideFrom": {
               "legend": false,
@@ -596,12 +413,7 @@
         },
         "overrides": []
       },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 3
-      },
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 11},
       "id": 10,
       "options": {
         "legend": {
@@ -611,106 +423,165 @@
           "values": ["value"]
         },
         "pieType": "pie",
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
+        "tooltip": {"mode": "single", "sort": "none"}
       },
       "pluginVersion": "12.1.0",
       "targets": [
         {
-          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> filter(fn: (r) => r[\"_field\"] == \"CDH_DIR_SIZE\" or r[\"_field\"] == \"EPS_DIR_SIZE\" or r[\"_field\"] == \"ADCS_DIR_SIZE\" or r[\"_field\"] == \"COMMS_DIR_SIZE\" or r[\"_field\"] == \"GPS_DIR_SIZE\" or r[\"_field\"] == \"PAYLOAD_DIR_SIZE\" or r[\"_field\"] == \"CMD_LOGS_DIR_SIZE\")\n  |> last()",
-          "refId": "A"
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> filter(fn: (r) => r[\"_field\"] == \"CDH_DIR_SIZE\")\n  |> last()",
+          "refId": "A",
+          "legendAlias": "CDH"
+        },
+        {
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> filter(fn: (r) => r[\"_field\"] == \"EPS_DIR_SIZE\")\n  |> last()",
+          "refId": "B",
+          "legendAlias": "EPS"
+        },
+        {
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> filter(fn: (r) => r[\"_field\"] == \"ADCS_DIR_SIZE\")\n  |> last()",
+          "refId": "C",
+          "legendAlias": "ADCS"
+        },
+        {
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> filter(fn: (r) => r[\"_field\"] == \"COMMS_DIR_SIZE\")\n  |> last()",
+          "refId": "D",
+          "legendAlias": "COMMS"
+        },
+        {
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> filter(fn: (r) => r[\"_field\"] == \"GPS_DIR_SIZE\")\n  |> last()",
+          "refId": "E",
+          "legendAlias": "GPS"
+        },
+        {
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> filter(fn: (r) => r[\"_field\"] == \"PAYLOAD_DIR_SIZE\")\n  |> last()",
+          "refId": "F",
+          "legendAlias": "PAYLOAD"
+        },
+        {
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> filter(fn: (r) => r[\"_field\"] == \"CMD_LOGS_DIR_SIZE\")\n  |> last()",
+          "refId": "G",
+          "legendAlias": "CMD_LOGS"
         }
       ],
       "title": "Storage Distribution by Subsystem",
       "type": "piechart"
     },
     {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "influxdb"
-      },
+      "datasource": {"type": "influxdb", "uid": "influxdb"},
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
+          "color": {"mode": "palette-classic"},
           "custom": {
-            "align": "auto",
-            "cellOptions": {
-              "type": "auto"
-            },
-            "inspect": false
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "showPoints": "never"
           },
           "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          }
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": 0}]},
+          "unit": "bytes"
         },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Size (Bytes)"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "bytes"
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
-      "gridPos": {
-        "h": 10,
-        "w": 24,
-        "x": 0,
-        "y": 11
-      },
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 11},
       "id": 11,
       "options": {
-        "footer": {
-          "countRows": false,
-          "fields": "",
-          "reducer": ["sum"],
-          "show": false
+        "legend": {
+          "calcs": ["lastNotNull"],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
         },
-        "showHeader": true,
-        "sortBy": []
+        "tooltip": {"mode": "single", "sort": "none"}
       },
       "pluginVersion": "12.1.0",
       "targets": [
         {
-          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> map(fn: (r) => ({Subsystem: \"CDH\", Files: r.CDH_NUM_FILES, Size: r.CDH_DIR_SIZE}))\n  |> union(other: (from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> map(fn: (r) => ({Subsystem: \"EPS\", Files: r.EPS_NUM_FILES, Size: r.EPS_DIR_SIZE}))))\n  |> union(other: (from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> map(fn: (r) => ({Subsystem: \"ADCS\", Files: r.ADCS_NUM_FILES, Size: r.ADCS_DIR_SIZE}))))\n  |> union(other: (from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> map(fn: (r) => ({Subsystem: \"COMMS\", Files: r.COMMS_NUM_FILES, Size: r.COMMS_DIR_SIZE}))))\n  |> union(other: (from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> map(fn: (r) => ({Subsystem: \"GPS\", Files: r.GPS_NUM_FILES, Size: r.GPS_DIR_SIZE}))))\n  |> union(other: (from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> map(fn: (r) => ({Subsystem: \"PAYLOAD\", Files: r.PAYLOAD_NUM_FILES, Size: r.PAYLOAD_DIR_SIZE}))))\n  |> union(other: (from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> map(fn: (r) => ({Subsystem: \"CMD_LOGS\", Files: r.CMD_LOGS_NUM_FILES, Size: r.CMD_LOGS_DIR_SIZE}))))\n  |> sort(columns: [\"Subsystem\"])",
-          "refId": "A"
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> filter(fn: (r) => r[\"_field\"] == \"SD_TOTAL_USAGE\")",
+          "refId": "A",
+          "legendAlias": "Total Storage"
         }
       ],
-      "title": "Storage Details by Subsystem",
-      "type": "table"
+      "title": "Total Storage Usage Trend",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "influxdb", "uid": "influxdb"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 50,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "showPoints": "auto"
+          },
+          "mappings": [],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "blue", "value": 0}]},
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 20},
+      "id": 12,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {"mode": "single", "sort": "none"}
+      },
+      "pluginVersion": "12.1.0",
+      "targets": [
+        {
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> filter(fn: (r) => r[\"_field\"] == \"CDH_NUM_FILES\")",
+          "refId": "A",
+          "legendAlias": "CDH"
+        },
+        {
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> filter(fn: (r) => r[\"_field\"] == \"EPS_NUM_FILES\")",
+          "refId": "B",
+          "legendAlias": "EPS"
+        },
+        {
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> filter(fn: (r) => r[\"_field\"] == \"ADCS_NUM_FILES\")",
+          "refId": "C",
+          "legendAlias": "ADCS"
+        },
+        {
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> filter(fn: (r) => r[\"_field\"] == \"COMMS_NUM_FILES\")",
+          "refId": "D",
+          "legendAlias": "COMMS"
+        },
+        {
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> filter(fn: (r) => r[\"_field\"] == \"GPS_NUM_FILES\")",
+          "refId": "E",
+          "legendAlias": "GPS"
+        },
+        {
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> filter(fn: (r) => r[\"_field\"] == \"PAYLOAD_NUM_FILES\")",
+          "refId": "F",
+          "legendAlias": "PAYLOAD"
+        },
+        {
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> filter(fn: (r) => r[\"_field\"] == \"CMD_LOGS_NUM_FILES\")",
+          "refId": "G",
+          "legendAlias": "CMD_LOGS"
+        }
+      ],
+      "title": "File Count by Subsystem",
+      "type": "timeseries"
     }
   ],
   "refresh": "10s",
   "schemaVersion": 39,
-  "tags": [
-    "satellite",
-    "storage",
-    "telemetry"
-  ],
-  "templating": {
-    "list": []
-  },
-  "time": {
-    "from": "now-24h",
-    "to": "now"
-  },
+  "tags": ["satellite", "storage", "telemetry"],
+  "templating": {"list": []},
+  "time": {"from": "now-24h", "to": "now"},
   "timepicker": {},
   "timezone": "",
   "title": "Satellite Storage Dashboard",
