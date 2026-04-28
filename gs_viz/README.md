@@ -75,6 +75,7 @@ echo '{"CDH":{"TIME":946688093},"EPS":{},"ADCS":{}}' | nc localhost 5555
 
 **Pre-configured Dashboards** (automatically available on first launch):
 - **Satellite Overview** - High-level system status and key metrics
+- **Satellite Storage** - CDH storage usage, file counts, and storage-health fields
 - **EPS - Power System** - Detailed battery, solar, and power monitoring
 - **ADCS - Attitude Control** - Gyro, magnetometer, sun sensors, and attitude
 
