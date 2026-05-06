@@ -392,6 +392,17 @@
           "refId": "G",
           "legendAlias": "CMD_LOGS"
         }
+        ,
+        {
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> filter(fn: (r) => r[\"_field\"] == \"HAL_DIR_SIZE\")",
+          "refId": "H",
+          "legendAlias": "HAL"
+        },
+        {
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> filter(fn: (r) => r[\"_field\"] == \"EPS_WARNING_DIR_SIZE\")",
+          "refId": "I",
+          "legendAlias": "EPS_WARNING"
+        }
       ],
       "title": "Directory Size Breakdown",
       "type": "timeseries"
@@ -461,6 +472,17 @@
           "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> filter(fn: (r) => r[\"_field\"] == \"CMD_LOGS_DIR_SIZE\")\n  |> last()",
           "refId": "G",
           "legendAlias": "CMD_LOGS"
+        }
+        ,
+        {
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> filter(fn: (r) => r[\"_field\"] == \"HAL_DIR_SIZE\")\n  |> last()",
+          "refId": "H",
+          "legendAlias": "HAL"
+        },
+        {
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> filter(fn: (r) => r[\"_field\"] == \"EPS_WARNING_DIR_SIZE\")\n  |> last()",
+          "refId": "I",
+          "legendAlias": "EPS_WARNING"
         }
       ],
       "title": "Storage Distribution by Subsystem",
@@ -571,6 +593,17 @@
           "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> filter(fn: (r) => r[\"_field\"] == \"CMD_LOGS_NUM_FILES\")",
           "refId": "G",
           "legendAlias": "CMD_LOGS"
+        }
+        ,
+        {
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> filter(fn: (r) => r[\"_field\"] == \"HAL_NUM_FILES\")",
+          "refId": "H",
+          "legendAlias": "HAL"
+        },
+        {
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> filter(fn: (r) => r[\"_field\"] == \"EPS_WARNING_NUM_FILES\")",
+          "refId": "I",
+          "legendAlias": "EPS_WARNING"
         }
       ],
       "title": "File Count by Subsystem",
