@@ -6,6 +6,7 @@ A simple Flask web app to build and send commands to the satellite.
 from flask import Flask, render_template, request, jsonify
 from datetime import datetime
 import json
+from pathlib import Path
 import threading
 import time
 
@@ -20,6 +21,54 @@ log.setLevel(logging.ERROR)
 rpc_client = SimpleRPCClient(address)
 
 app = Flask(__name__)
+BASE_DIR = Path(__file__).resolve().parent
+
+DEFAULT_SATELLITE_TARGETS = [
+    {
+        'id': 1,
+        'callsign': 'CT6ARG'
+    },
+    {
+        'id': 2,
+        'callsign': 'CT6CMU'
+    }
+]
+
+
+def _target_label(target):
+    return f"{target['id']}:{target['callsign']}"
+
+
+def _normalize_satellite_target(target):
+    satellite_id = int(target['id'])
+    callsign = str(target['callsign']).strip()
+
+    if not callsign:
+        raise ValueError('Satellite callsign cannot be empty')
+
+    return {
+        'id': satellite_id,
+        'callsign': callsign,
+        'label': f"{satellite_id}:{callsign}"
+    }
+
+
+def load_satellite_targets():
+    """Load fallback frontend-safe satellite target metadata."""
+    config_path = BASE_DIR / 'satellites.json'
+    try:
+        raw_targets = json.loads(config_path.read_text())
+    except FileNotFoundError:
+        raw_targets = DEFAULT_SATELLITE_TARGETS
+
+    targets = [_normalize_satellite_target(target) for target in raw_targets]
+    if len(targets) != 2:
+        raise ValueError('Expected exactly two satellite targets')
+    return targets
+
+
+SATELLITE_TARGETS = load_satellite_targets()
+selected_satellite_target = SATELLITE_TARGETS[0]
 
 # Store the last received packet info
 last_packet = {
@@ -121,6 +170,53 @@ def get_rpc_command_definitions():
     return normalize_command_definitions(raw_definitions)
 
 
+def refresh_satellite_targets_from_rpc():
+    """Fetch satellite target labels from the backend, falling back to local config."""
+    global SATELLITE_TARGETS, selected_satellite_target
+
+    try:
+        raw_targets = rpc_client.get_satellite_targets()
+        targets = [_normalize_satellite_target(target) for target in raw_targets]
+        if len(targets) != 2:
+            raise ValueError('Expected exactly two satellite targets from backend')
+        SATELLITE_TARGETS = targets
+    except Exception as exc:
+        print(f"[WARN] Using local satellite targets fallback: {exc}")
+        SATELLITE_TARGETS = load_satellite_targets()
+
+    selected_id = selected_satellite_target['id']
+    selected_satellite_target = next(
+        (target for target in SATELLITE_TARGETS if target['id'] == selected_id),
+        SATELLITE_TARGETS[0]
+    )
+
+
+def public_target(target):
+    """Return target metadata that is safe to expose to the browser."""
+    return {
+        'id': target['id'],
+        'callsign': target['callsign'],
+        'label': _target_label(target)
+    }
+
+
+def find_satellite_target(data):
+    """Find a satellite target by id or callsign from request data."""
+    if 'id' in data:
+        satellite_id = int(data['id'])
+        for target in SATELLITE_TARGETS:
+            if target['id'] == satellite_id:
+                return target
+
+    callsign = str(data.get('callsign', '')).strip()
+    if callsign:
+        for target in SATELLITE_TARGETS:
+            if target['callsign'] == callsign:
+                return target
+
+    raise ValueError('Unknown satellite target')
+
+
 def coerce_argument_value(arg_name, arg_value, arg_format):
     """Convert incoming string values from the UI to the expected Python type."""
     if arg_format in INT_FORMATS:
@@ -134,7 +230,7 @@ def coerce_argument_value(arg_name, arg_value, arg_format):
         f"Unknown argument type '{arg_format}' for argument '{arg_name}'"
     )
 
-def _run_downlink(tid, img_path):
+def _run_downlink(tid, img_path, sat_id, rpc_address):
     """
     Background thread that runs the full image downlink state machine:
       CREATE_TRANS → wait INIT_TRANS → loop(GENERATE_X_PACKETS → wait ACK
@@ -143,7 +239,6 @@ def _run_downlink(tid, img_path):
     """
     global downlink_state, _downlink_stop_flag
 
-    from simple_rpc_clinet import SimpleRPCClient, address as rpc_address
     local_rpc = SimpleRPCClient(rpc_address)
 
     def update_state(**kwargs):
@@ -156,7 +251,11 @@ def _run_downlink(tid, img_path):
     try:
         # Step 1: Send CREATE_TRANS
         update_state(step='Sending CREATE_TRANS...')
-        result = local_rpc.send_command('CREATE_TRANS', {'tid': tid, 'string_command': img_path})
+        result = local_rpc.send_command(
+            'CREATE_TRANS',
+            {'tid': tid, 'string_command': img_path},
+            sat_id
+        )
         if not result:
             update_state(done=True, success=False,
                          error='CREATE_TRANS rejected by backend (tid conflict or invalid path)')
@@ -212,7 +311,7 @@ def _run_downlink(tid, img_path):
             received_before_generate = received
 
             # Send GENERATE_X_PACKETS
-            local_rpc.send_command('GENERATE_X_PACKETS', {'tid': tid, 'x': batch_size})
+            local_rpc.send_command('GENERATE_X_PACKETS', {'tid': tid, 'x': batch_size}, sat_id)
 
             # Wait for ACK with rid=0 (up to 15s)
             ack_deadline = time.time() + 15
@@ -273,7 +372,11 @@ def _run_downlink(tid, img_path):
                         return
                     update_state(step=f'Requesting single packet seq={seq_num} '
                                       f'({status["received_packets"]}/{number_of_packets} received)...')
-                    local_rpc.send_command('GENERATE_SINGLE_PACKET', {'tid': tid, 'seq_number': seq_num})
+                    local_rpc.send_command(
+                        'GENERATE_SINGLE_PACKET',
+                        {'tid': tid, 'seq_number': seq_num},
+                        sat_id
+                    )
                     # Wait up to 10s for this fragment to arrive
                     frag_deadline = time.time() + 10
                     prev_recv = status['received_packets']
@@ -292,7 +395,11 @@ def _run_downlink(tid, img_path):
 
             # Send CONFIRM_LAST_BATCH
             update_state(step='Sending CONFIRM_LAST_BATCH...')
-            local_rpc.send_command('CONFIRM_LAST_BATCH', {'tid': tid, 'bitmap_high': 0, 'bitmap_low': 0})
+            local_rpc.send_command(
+                'CONFIRM_LAST_BATCH',
+                {'tid': tid, 'bitmap_high': 0, 'bitmap_low': 0},
+                sat_id
+            )
 
             # Wait for ACK (up to 10s)
             ack_deadline = time.time() + 10
@@ -348,7 +455,7 @@ def get_commands():
 def get_predefined_commands():
     """Get predefined commands from JSON file"""
     try:
-        with open('predefined_commands.json', 'r') as f:
+        with open(BASE_DIR / 'predefined_commands.json', 'r') as f:
             predefined = json.load(f)
         return jsonify({'success': True, 'commands': predefined})
     except FileNotFoundError:
@@ -380,12 +487,17 @@ def send_command():
             arguments[arg_name] = coerce_argument_value(arg_name, arg_value, arg_str_format)
             
         print(f"=== SENDING COMMAND ===")
+        print(f"Target: {_target_label(selected_satellite_target)}")
         print(f"Command: {cmd_name}")
         print(f"Arguments: {arguments}")
         # print(f"Encoded bytes: {' '.join(f'0x{b:02X}' for b in encoded_command)}")
         print(f"======================")
 
-        response = rpc_client.send_command(cmd_name, arguments)
+        response = rpc_client.send_command(
+            cmd_name,
+            arguments,
+            selected_satellite_target['id']
+        )
         
         # if response is true, i want the command box to flash  light green
         # if the response is false I want the command box to flash light red
@@ -393,6 +505,7 @@ def send_command():
         return jsonify({
             'success': response,
             'message': f'Command {cmd_name} sent successfully',
+            'target': public_target(selected_satellite_target),
             # 'hex': ' '.join(f'0x{b:02X}' for b in encoded_command)
         })
         
@@ -451,25 +564,41 @@ def toggle_ground_station():
         'active': ground_station_active
     })
 
+@app.route('/api/satellites')
+def get_satellites():
+    """Return frontend-safe satellite target metadata."""
+    refresh_satellite_targets_from_rpc()
+    return jsonify({
+        'success': True,
+        'satellites': [public_target(target) for target in SATELLITE_TARGETS],
+        'selected': public_target(selected_satellite_target)
+    })
+
+
 @app.route('/api/satellite', methods=['GET'])
 def get_satellite():
-    """Return the currently selected satellite callsign."""
-    try:
-        callsign = rpc_client.get_sc_callsign()
-        return jsonify({'success': True, 'callsign': callsign})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
+    """Return the currently selected satellite target."""
+    return jsonify({
+        'success': True,
+        'target': public_target(selected_satellite_target),
+        'callsign': selected_satellite_target['callsign']
+    })
 
 @app.route('/api/satellite', methods=['POST'])
 def set_satellite():
-    """Set the active satellite callsign."""
+    """Select the active satellite target for subsequent commands."""
+    global selected_satellite_target
     try:
         data = request.json
-        callsign = data.get('callsign', '').strip()
-        if not callsign:
-            return jsonify({'success': False, 'error': 'callsign is required'})
-        rpc_client.set_sc_callsign(callsign)
-        return jsonify({'success': True, 'callsign': callsign})
+        target = find_satellite_target(data)
+        selected_satellite_target = target
+
+        response = {
+            'success': True,
+            'target': public_target(target),
+            'callsign': target['callsign']
+        }
+        return jsonify(response)
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 
@@ -594,7 +723,9 @@ def auto_downlink_start():
         })
         _downlink_stop_flag = False
 
-    thread = threading.Thread(target=_run_downlink, args=(tid, img_path), daemon=True)
+    sat_id = selected_satellite_target['id']
+    rpc_address = rpc_client.address
+    thread = threading.Thread(target=_run_downlink, args=(tid, img_path, sat_id, rpc_address), daemon=True)
     thread.start()
     return jsonify({'success': True})
 

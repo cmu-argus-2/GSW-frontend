@@ -5,6 +5,8 @@ let selectedCommand = null;
 let sentCommandHistory = [];   // browser-only sent command log
 let downlinkPollInterval = null;
 let currentRenderedPackets = [];  // last rendered packet list (for overlay)
+let satelliteTargets = [];
+let currentSatelliteTarget = null;
 
 /**
  * Load commands from the Flask API
@@ -35,6 +37,26 @@ async function loadPredefinedCommands() {
         }
     } catch (error) {
         console.error('Error loading predefined commands:', error);
+    }
+}
+
+/**
+ * Load available satellite targets from the Flask API.
+ */
+async function loadSatellites() {
+    try {
+        const response = await fetch('/api/satellites');
+        const data = await response.json();
+        if (data.success) {
+            satelliteTargets = data.satellites || [];
+            currentSatelliteTarget = data.selected || null;
+            renderSatelliteButtons();
+            if (currentSatelliteTarget) {
+                updateSatelliteButtons(currentSatelliteTarget.id);
+            }
+        }
+    } catch (error) {
+        console.error('Error loading satellite targets:', error);
     }
 }
 
@@ -390,15 +412,16 @@ async function sendCommandRequest(commandName, args) {
         body: JSON.stringify({ command: commandName, arguments: args })
     });
     const data = await response.json();
-    recordSentCommand(commandName, args, data.success);
+    recordSentCommand(commandName, args, data.success, data.target || currentSatelliteTarget);
     return data;
 }
 
-function recordSentCommand(name, args, success) {
+function recordSentCommand(name, args, success, target) {
     const now = new Date();
     sentCommandHistory.unshift({
         name,
         args,
+        target,
         success: !!success,
         ts: now.toLocaleTimeString('en-GB')
     });
@@ -757,6 +780,9 @@ function renderSentCommandHistory() {
         const argStr = Object.keys(cmd.args || {}).length > 0
             ? Object.entries(cmd.args).map(([k, v]) => `${escapeHtml(k)}=${escapeHtml(String(v))}`).join(', ')
             : 'no args';
+        const targetLabel = cmd.target && cmd.target.label
+            ? cmd.target.label
+            : 'target unknown';
         const statusBadge = cmd.success
             ? '<span class="sent-badge sent-ok">OK</span>'
             : '<span class="sent-badge sent-err">ERR</span>';
@@ -768,6 +794,7 @@ function renderSentCommandHistory() {
                 </div>
                 <div class="history-data">
                     <strong>${escapeHtml(cmd.name)}</strong>
+                    <div class="cmd-target-text">${escapeHtml(targetLabel)}</div>
                     <div class="cmd-args-text">${argStr}</div>
                 </div>
             </div>`;
@@ -799,41 +826,56 @@ async function updateGroundStationStatus() {
     }
 }
 
+function renderSatelliteButtons() {
+    const container = document.getElementById('satellite-selector');
+    if (!container) return;
+
+    container.querySelectorAll('.sat-btn, .sat-empty').forEach(element => element.remove());
+
+    if (satelliteTargets.length === 0) {
+        const emptyState = document.createElement('span');
+        emptyState.className = 'sat-empty';
+        emptyState.textContent = 'No targets';
+        container.appendChild(emptyState);
+        return;
+    }
+
+    satelliteTargets.forEach(target => {
+        const button = document.createElement('button');
+        button.className = 'sat-btn';
+        button.id = `sat-btn-${target.id}`;
+        button.dataset.satelliteId = String(target.id);
+        button.title = target.callsign;
+        button.textContent = target.label;
+        button.addEventListener('click', () => selectSatellite(target.id));
+        container.appendChild(button);
+    });
+}
+
 /**
- * Set the active satellite callsign and update the UI buttons.
+ * Set the active satellite target and update XML-RPC routing.
  */
-async function selectSatellite(callsign) {
+async function selectSatellite(satelliteId) {
     try {
         const response = await fetch('/api/satellite', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ callsign })
+            body: JSON.stringify({ id: satelliteId })
         });
         const data = await response.json();
         if (data.success) {
-            updateSatelliteButtons(data.callsign);
+            currentSatelliteTarget = data.target;
+            updateSatelliteButtons(data.target.id);
         }
     } catch (error) {
         console.error('Error selecting satellite:', error);
     }
 }
 
-function updateSatelliteButtons(activeCallsign) {
+function updateSatelliteButtons(activeSatelliteId) {
     document.querySelectorAll('.sat-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.id === `sat-btn-${activeCallsign}`);
+        btn.classList.toggle('active', btn.dataset.satelliteId === String(activeSatelliteId));
     });
-}
-
-async function loadCurrentSatellite() {
-    try {
-        const response = await fetch('/api/satellite');
-        const data = await response.json();
-        if (data.success && data.callsign) {
-            updateSatelliteButtons(data.callsign);
-        }
-    } catch (error) {
-        console.error('Error loading current satellite:', error);
-    }
 }
 
 /**
@@ -841,9 +883,9 @@ async function loadCurrentSatellite() {
  */
 document.addEventListener('DOMContentLoaded', function() {
     // Load initial data
+    loadSatellites();
     loadCommands();
     loadPredefinedCommands();
-    loadCurrentSatellite();
     
     // Setup config modal event listeners
     const configBtn = document.getElementById('config-btn');

@@ -9,5 +9,24 @@
             "target_state_id": "1",
             "time_in_state": 10
         }
+    },
+    {
+        "command": "SET_FSK",
+        "arguments": {
+            "frequency": 434.707,
+            "power": 22,
+            "bit_rate": 19200,
+            "pulse_shape": 8,
+            "bandwidth": 27,
+            "f_dev": 5000,
+            "pre_length": 128,
+            "pre_detect": 5,
+            "sync_length": 32,
+            "addr_comp": 0,
+            "packet_type": 1,
+            "payload_length": 255,
+            "crc_type": 6,
+            "whitening": 1
+        }
     }
 ]

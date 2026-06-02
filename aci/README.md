@@ -157,6 +157,25 @@ Click the ⚙️ (gear) button to:
 - Start/stop/restart the ground station server
 - View current connection settings
 
+### Satellite Targets
+
+The target buttons are normally fetched from the GSW-backend XML-RPC method
+`get_satellite_targets`, which returns frontend-safe target metadata only:
+
+```json
+{
+    "id": 1,
+    "callsign": "CT6ARG"
+}
+```
+
+The UI displays targets as `id:callsign`, for example `1:CT6ARG`. Selecting a
+target causes ACI to include that satellite ID when sending commands to the
+single configured XML-RPC backend. Auth keys and per-satellite callsign packing
+remain in the ground-station backend and should not be added to this frontend
+config. If the backend is offline or does not expose target metadata yet,
+`satellites.json` is used as a local fallback for display labels.
+
 ## API Endpoints
 
 | Endpoint | Method | Description |
@@ -164,8 +183,10 @@ Click the ⚙️ (gear) button to:
 | `/` | GET | Serve main interface |
 | `/api/commands` | GET | List all available commands |
 | `/api/predefined_commands` | GET | Get predefined commands from JSON |
+| `/api/satellites` | GET | List configured satellite targets |
 | `/api/send_command` | POST | Send a command to the satellite |
 | `/api/ground_station_status` | GET | Check if ground station is active |
+| `/api/satellite` | GET/POST | Get or select the active satellite target |
 | `/api/update_server_address` | POST | Update RPC server address |
 | `/api/server_control` | POST | Start/stop/restart RPC server |
 

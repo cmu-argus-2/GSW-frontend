@@ -54,23 +54,27 @@ class SimpleRPCClient:
 
     def update_address(self, ip, port):
         """Update the XML-RPC server address used by this client."""
-        self.address = (ip, int(port))
-        self.server = xmlrpc.client.ServerProxy(
-            f'http://{ip}:{port}',
-            allow_none=True
-        )
+        with self._lock:
+            self.address = (ip, int(port))
+            self.server = xmlrpc.client.ServerProxy(
+                f'http://{ip}:{port}',
+                allow_none=True
+            )
         
     
-    def send_command(self, cmd_name, params):
+    def send_command(self, cmd_name, params, sat_id=None):
         """
         Called by flask when a command is to be sent
         will receive the arguments already converted to the correct type
         """
         
-        print("Calling rpc server with command:", cmd_name, "and params:", params)
+        print("Calling rpc server with command:", cmd_name, "params:", params, "sat_id:", sat_id)
 
         with self._lock:
-            response = self.server.add_command(cmd_name, params)
+            if sat_id is None:
+                response = self.server.add_command(cmd_name, params)
+            else:
+                response = self.server.add_command(cmd_name, params, int(sat_id))
         print("Received response from rpc server:", response)
 
         return response
@@ -116,6 +120,13 @@ class SimpleRPCClient:
         print("Received command definitions from rpc server")
         return response
 
+    def get_satellite_targets(self):
+        """Request satellite target metadata from the SimpleRPC server."""
+        with self._lock:
+            response = self.server.get_satellite_targets()
+        print("Received satellite targets from rpc server")
+        return response
+
     def get_pending_ack(self):
         """Pop and return the oldest pending ACK from the backend, or None if empty."""
         with self._lock:
@@ -130,13 +141,3 @@ class SimpleRPCClient:
         """Drain and return all decoded packets queued since the last call."""
         with self._lock:
             return self.server.get_new_packets()
-
-    def set_sc_callsign(self, callsign):
-        """Set the active satellite callsign on the backend."""
-        with self._lock:
-            return self.server.set_sc_callsign(callsign)
-
-    def get_sc_callsign(self):
-        """Return the currently selected satellite callsign from the backend."""
-        with self._lock:
-            return self.server.get_sc_callsign()
