@@ -55,6 +55,7 @@ The system consists of three main components:
 - **Ground station status** - Visual indicator shows connection state
 - **Auto-ping** - Background thread checks server availability every 5 seconds
 - **Packet history** - View last 50 received packets with timestamps
+- **Shared command log** - View commands sent by all operators using the same ACI server
 - **Command feedback** - Visual flash (green/red) indicates success/failure
 
 ### ⚙️ Server Configuration
@@ -169,12 +170,18 @@ The target buttons are normally fetched from the GSW-backend XML-RPC method
 }
 ```
 
-The UI displays targets as `id:callsign`, for example `1:CT6ARG`. Selecting a
-target causes ACI to include that satellite ID when sending commands to the
-single configured XML-RPC backend. Auth keys and per-satellite callsign packing
-remain in the ground-station backend and should not be added to this frontend
-config. If the backend is offline or does not expose target metadata yet,
-`satellites.json` is used as a local fallback for display labels.
+The UI displays targets as `id:callsign`, for example `1:CT6ARG`. Command
+targets are multi-select toggles, so an operator can send the same command to
+one or both spacecraft. When both are selected, ACI sends one command per
+satellite and records separate history rows. The telemetry selector is separate
+and only filters received-packet display.
+
+These choices are stored in the operator's browser. This lets multiple
+operators use the same ACI server without changing each other's selected
+spacecraft. Auth keys and per-satellite callsign packing remain in the
+ground-station backend and should not be added to this frontend config. If the
+backend is offline or does not expose target metadata yet, `satellites.json` is
+used as a local fallback for display labels.
 
 ## API Endpoints
 
@@ -185,8 +192,8 @@ config. If the backend is offline or does not expose target metadata yet,
 | `/api/predefined_commands` | GET | Get predefined commands from JSON |
 | `/api/satellites` | GET | List configured satellite targets |
 | `/api/send_command` | POST | Send a command to the satellite |
+| `/api/sent_commands` | GET | List command history shared by all ACI users |
 | `/api/ground_station_status` | GET | Check if ground station is active |
-| `/api/satellite` | GET/POST | Get or select the active satellite target |
 | `/api/update_server_address` | POST | Update RPC server address |
 | `/api/server_control` | POST | Start/stop/restart RPC server |
 

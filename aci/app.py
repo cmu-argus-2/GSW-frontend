@@ -68,7 +68,6 @@ def load_satellite_targets():
 
 
 SATELLITE_TARGETS = load_satellite_targets()
-selected_satellite_target = SATELLITE_TARGETS[0]
 
 # Store the last received packet info
 last_packet = {
@@ -87,6 +86,10 @@ ground_station_active = False
 from collections import deque as _deque
 received_packets_buffer = _deque(maxlen=200)
 _rx_buffer_lock = threading.Lock()
+
+# Shared sent-command history for all browser sessions connected to this ACI server
+sent_command_history = _deque(maxlen=200)
+_sent_command_lock = threading.Lock()
 
 # Automated image downlink state
 downlink_state = {
@@ -172,7 +175,7 @@ def get_rpc_command_definitions():
 
 def refresh_satellite_targets_from_rpc():
     """Fetch satellite target labels from the backend, falling back to local config."""
-    global SATELLITE_TARGETS, selected_satellite_target
+    global SATELLITE_TARGETS
 
     try:
         raw_targets = rpc_client.get_satellite_targets()
@@ -183,12 +186,6 @@ def refresh_satellite_targets_from_rpc():
     except Exception as exc:
         print(f"[WARN] Using local satellite targets fallback: {exc}")
         SATELLITE_TARGETS = load_satellite_targets()
-
-    selected_id = selected_satellite_target['id']
-    selected_satellite_target = next(
-        (target for target in SATELLITE_TARGETS if target['id'] == selected_id),
-        SATELLITE_TARGETS[0]
-    )
 
 
 def public_target(target):
@@ -202,19 +199,61 @@ def public_target(target):
 
 def find_satellite_target(data):
     """Find a satellite target by id or callsign from request data."""
-    if 'id' in data:
+    if 'satellite_id' in data and data['satellite_id'] is not None:
+        satellite_id = int(data['satellite_id'])
+        for target in SATELLITE_TARGETS:
+            if target['id'] == satellite_id:
+                return target
+        raise ValueError(f"Unknown satellite target id: {satellite_id}")
+
+    if 'id' in data and data['id'] is not None:
         satellite_id = int(data['id'])
         for target in SATELLITE_TARGETS:
             if target['id'] == satellite_id:
                 return target
+        raise ValueError(f"Unknown satellite target id: {satellite_id}")
 
     callsign = str(data.get('callsign', '')).strip()
     if callsign:
         for target in SATELLITE_TARGETS:
             if target['callsign'] == callsign:
                 return target
+        raise ValueError(f"Unknown satellite callsign: {callsign}")
 
-    raise ValueError('Unknown satellite target')
+    return default_satellite_target()
+
+
+def find_satellite_targets(data):
+    """Find one or more satellite targets from request data."""
+    if 'satellite_ids' in data and data['satellite_ids'] is not None:
+        targets = []
+        for satellite_id in data['satellite_ids']:
+            targets.append(find_satellite_target({'satellite_id': satellite_id}))
+        if not targets:
+            raise ValueError('At least one satellite target is required')
+        return targets
+
+    return [find_satellite_target(data)]
+
+
+def default_satellite_target():
+    return SATELLITE_TARGETS[0]
+
+
+def record_sent_command(name, args, target, success, error=None):
+    """Store sent-command history shared by every browser using this ACI server."""
+    entry = {
+        'name': name,
+        'args': args,
+        'target': public_target(target),
+        'success': bool(success),
+        'error': error,
+        'ts': datetime.now().strftime('%H:%M:%S'),
+        'client': request.remote_addr or 'unknown'
+    }
+    with _sent_command_lock:
+        sent_command_history.appendleft(entry)
+    return entry
 
 
 def coerce_argument_value(arg_name, arg_value, arg_format):
@@ -469,10 +508,14 @@ def send_command():
     Send a command to the satellite.
     This is where you'll add your ground station communication code.
     """
+    cmd_name = None
+    arguments = {}
+    targets = [default_satellite_target()]
     try:
         data = request.json
         cmd_name = data['command']
         arguments = data['arguments']
+        targets = find_satellite_targets(data)
         command_definitions = get_rpc_command_definitions()
         command_definition = command_definitions.get(cmd_name)
 
@@ -485,32 +528,61 @@ def send_command():
         for arg_name, arg_value in arguments.items():
             arg_str_format = argument_types.get(arg_name)
             arguments[arg_name] = coerce_argument_value(arg_name, arg_value, arg_str_format)
-            
-        print(f"=== SENDING COMMAND ===")
-        print(f"Target: {_target_label(selected_satellite_target)}")
-        print(f"Command: {cmd_name}")
-        print(f"Arguments: {arguments}")
-        # print(f"Encoded bytes: {' '.join(f'0x{b:02X}' for b in encoded_command)}")
-        print(f"======================")
 
-        response = rpc_client.send_command(
-            cmd_name,
-            arguments,
-            selected_satellite_target['id']
-        )
+        results = []
+        success = True
+        for target in targets:
+            print(f"=== SENDING COMMAND ===")
+            print(f"Target: {_target_label(target)}")
+            print(f"Command: {cmd_name}")
+            print(f"Arguments: {arguments}")
+            print(f"======================")
+
+            error = None
+            try:
+                response = rpc_client.send_command(
+                    cmd_name,
+                    arguments,
+                    target['id']
+                )
+            except Exception as exc:
+                response = False
+                error = str(exc)
+
+            history_entry = record_sent_command(cmd_name, arguments, target, response, error)
+            success = success and bool(response)
+            results.append({
+                'success': bool(response),
+                'target': public_target(target),
+                'history_entry': history_entry,
+                'error': error
+            })
         
         # if response is true, i want the command box to flash  light green
         # if the response is false I want the command box to flash light red
         
         return jsonify({
-            'success': response,
+            'success': success,
             'message': f'Command {cmd_name} sent successfully',
-            'target': public_target(selected_satellite_target),
+            'results': results,
             # 'hex': ' '.join(f'0x{b:02X}' for b in encoded_command)
         })
         
     except Exception as e:
+        if cmd_name:
+            for target in targets:
+                record_sent_command(cmd_name, arguments, target, False, str(e))
         return jsonify({'success': False, 'error': str(e)})
+
+
+@app.route('/api/sent_commands')
+def get_sent_commands():
+    """Return sent-command history shared by all browser sessions."""
+    with _sent_command_lock:
+        return jsonify({
+            'success': True,
+            'commands': list(sent_command_history)
+        })
 
 @app.route('/api/last_packet')
 def get_last_packet():
@@ -571,36 +643,9 @@ def get_satellites():
     return jsonify({
         'success': True,
         'satellites': [public_target(target) for target in SATELLITE_TARGETS],
-        'selected': public_target(selected_satellite_target)
+        'selected': public_target(default_satellite_target())
     })
 
-
-@app.route('/api/satellite', methods=['GET'])
-def get_satellite():
-    """Return the currently selected satellite target."""
-    return jsonify({
-        'success': True,
-        'target': public_target(selected_satellite_target),
-        'callsign': selected_satellite_target['callsign']
-    })
-
-@app.route('/api/satellite', methods=['POST'])
-def set_satellite():
-    """Select the active satellite target for subsequent commands."""
-    global selected_satellite_target
-    try:
-        data = request.json
-        target = find_satellite_target(data)
-        selected_satellite_target = target
-
-        response = {
-            'success': True,
-            'target': public_target(target),
-            'callsign': target['callsign']
-        }
-        return jsonify(response)
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
 
 @app.route('/api/update_server_address', methods=['POST'])
 def update_server_address():
@@ -681,17 +726,16 @@ def update_last_packet(packet_bytes):
 
 @app.route('/api/received_packets')
 def get_received_packets():
-    """Poll the backend for new decoded packets, buffer them, and return the full buffer."""
+    """Return decoded packet history from the backend, falling back to local cache."""
     try:
-        new_packets = rpc_client.get_new_packets()
-        if new_packets:
-            with _rx_buffer_lock:
-                received_packets_buffer.extend(new_packets)
+        packets = rpc_client.get_new_packets() or []
+        with _rx_buffer_lock:
+            received_packets_buffer.clear()
+            received_packets_buffer.extend(packets)
+        return jsonify({'success': True, 'packets': packets})
     except Exception:
-        pass  # backend may be offline; return what we have buffered
-    with _rx_buffer_lock:
-        return jsonify({'success': True, 'packets': list(received_packets_buffer)})
-
+        with _rx_buffer_lock:
+            return jsonify({'success': True, 'packets': list(received_packets_buffer)})
 
 @app.route('/api/auto_downlink/start', methods=['POST'])
 def auto_downlink_start():
@@ -704,6 +748,7 @@ def auto_downlink_start():
     data = request.json
     tid = data.get('tid')
     img_path = (data.get('img_path') or '').strip()
+    target = find_satellite_target(data)
 
     if tid is None or not isinstance(tid, int) or tid < 0 or tid > 7:
         return jsonify({'success': False, 'error': 'tid must be an integer 0-7'})
@@ -723,7 +768,7 @@ def auto_downlink_start():
         })
         _downlink_stop_flag = False
 
-    sat_id = selected_satellite_target['id']
+    sat_id = target['id']
     rpc_address = rpc_client.address
     thread = threading.Thread(target=_run_downlink, args=(tid, img_path, sat_id, rpc_address), daemon=True)
     thread.start()

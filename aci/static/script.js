@@ -2,11 +2,15 @@
 let commands = [];
 let quickCommands = [];
 let selectedCommand = null;
-let sentCommandHistory = [];   // browser-only sent command log
+let sentCommandHistory = [];
 let downlinkPollInterval = null;
+let receivedPacketHistory = [];
 let currentRenderedPackets = [];  // last rendered packet list (for overlay)
 let satelliteTargets = [];
-let currentSatelliteTarget = null;
+let selectedCommandTargetIds = [];
+let selectedTelemetryTargetId = 'all';
+const COMMAND_TARGETS_STORAGE_KEY = 'aci-command-target-ids';
+const TELEMETRY_TARGET_STORAGE_KEY = 'aci-telemetry-target-id';
 
 /**
  * Load commands from the Flask API
@@ -49,11 +53,12 @@ async function loadSatellites() {
         const data = await response.json();
         if (data.success) {
             satelliteTargets = data.satellites || [];
-            currentSatelliteTarget = data.selected || null;
-            renderSatelliteButtons();
-            if (currentSatelliteTarget) {
-                updateSatelliteButtons(currentSatelliteTarget.id);
+            selectedCommandTargetIds = getStoredCommandTargetIds();
+            if (selectedCommandTargetIds.length === 0 && data.selected) {
+                selectedCommandTargetIds = [data.selected.id];
             }
+            selectedTelemetryTargetId = getStoredTelemetryTargetId();
+            renderSatelliteButtons();
         }
     } catch (error) {
         console.error('Error loading satellite targets:', error);
@@ -409,24 +414,15 @@ async function sendCommandRequest(commandName, args) {
     const response = await fetch('/api/send_command', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ command: commandName, arguments: args })
+        body: JSON.stringify({
+            command: commandName,
+            arguments: args,
+            satellite_ids: selectedCommandTargetIds
+        })
     });
     const data = await response.json();
-    recordSentCommand(commandName, args, data.success, data.target || currentSatelliteTarget);
+    await updateSentCommandHistory();
     return data;
-}
-
-function recordSentCommand(name, args, success, target) {
-    const now = new Date();
-    sentCommandHistory.unshift({
-        name,
-        args,
-        target,
-        success: !!success,
-        ts: now.toLocaleTimeString('en-GB')
-    });
-    if (sentCommandHistory.length > 50) sentCommandHistory.length = 50;
-    renderSentCommandHistory();
 }
 
 /**
@@ -610,7 +606,8 @@ async function updatePacketDisplay() {
         const response = await fetch('/api/received_packets');
         const data = await response.json();
         if (!data.success) return;
-        renderReceivedPackets(data.packets);
+        receivedPacketHistory = data.packets || [];
+        renderReceivedPackets(receivedPacketHistory);
     } catch (error) {
         console.error('Error updating received packets:', error);
     }
@@ -618,16 +615,24 @@ async function updatePacketDisplay() {
 
 function renderReceivedPackets(packets) {
     const container = document.getElementById('packet-display');
-    if (!packets || packets.length === 0) {
+    const filteredPackets = filterPacketsForTelemetryTarget(packets || []);
+    if (filteredPackets.length === 0) {
         container.innerHTML = '<div class="no-packet">No packets received yet.</div>';
         currentRenderedPackets = [];
         return;
     }
 
     // Most recent on top (server returns oldest-first since it extends a deque)
-    currentRenderedPackets = [...packets].reverse();
+    currentRenderedPackets = [...filteredPackets].reverse();
 
     container.innerHTML = currentRenderedPackets.map((p, idx) => formatPacketItem(p, idx)).join('');
+}
+
+function filterPacketsForTelemetryTarget(packets) {
+    if (selectedTelemetryTargetId === 'all') return packets;
+    const target = satelliteTargets.find(item => item.id === selectedTelemetryTargetId);
+    if (!target) return packets;
+    return packets.filter(packet => packet.callsign === target.callsign);
 }
 
 function formatPacketItem(p, idx) {
@@ -768,6 +773,21 @@ function escapeHtml(str) {
 }
 
 /**
+ * Poll shared sent-command history from the ACI server.
+ */
+async function updateSentCommandHistory() {
+    try {
+        const response = await fetch('/api/sent_commands');
+        const data = await response.json();
+        if (!data.success) return;
+        sentCommandHistory = data.commands || [];
+        renderSentCommandHistory();
+    } catch (error) {
+        console.error('Error updating sent command history:', error);
+    }
+}
+
+/**
  * Render sent command history to the history panel.
  */
 function renderSentCommandHistory() {
@@ -783,9 +803,13 @@ function renderSentCommandHistory() {
         const targetLabel = cmd.target && cmd.target.label
             ? cmd.target.label
             : 'target unknown';
+        const clientLabel = cmd.client ? `from ${cmd.client}` : '';
         const statusBadge = cmd.success
             ? '<span class="sent-badge sent-ok">OK</span>'
             : '<span class="sent-badge sent-err">ERR</span>';
+        const errorText = cmd.error
+            ? `<div class="cmd-args-text">Error: ${escapeHtml(cmd.error)}</div>`
+            : '';
         return `
             <div class="history-item sent-cmd-item">
                 <div class="history-time">
@@ -794,8 +818,9 @@ function renderSentCommandHistory() {
                 </div>
                 <div class="history-data">
                     <strong>${escapeHtml(cmd.name)}</strong>
-                    <div class="cmd-target-text">${escapeHtml(targetLabel)}</div>
+                    <div class="cmd-target-text">${escapeHtml(targetLabel)} ${escapeHtml(clientLabel)}</div>
                     <div class="cmd-args-text">${argStr}</div>
+                    ${errorText}
                 </div>
             </div>`;
     }).join('');
@@ -830,7 +855,7 @@ function renderSatelliteButtons() {
     const container = document.getElementById('satellite-selector');
     if (!container) return;
 
-    container.querySelectorAll('.sat-btn, .sat-empty').forEach(element => element.remove());
+    container.querySelectorAll('.sat-btn, .sat-empty, .sat-selector-group').forEach(element => element.remove());
 
     if (satelliteTargets.length === 0) {
         const emptyState = document.createElement('span');
@@ -840,41 +865,104 @@ function renderSatelliteButtons() {
         return;
     }
 
+    const commandGroup = document.createElement('div');
+    commandGroup.className = 'sat-selector-group';
+
+    const commandLabel = document.createElement('span');
+    commandLabel.className = 'sat-selector-label';
+    commandLabel.textContent = 'Command';
+    commandGroup.appendChild(commandLabel);
+
     satelliteTargets.forEach(target => {
         const button = document.createElement('button');
-        button.className = 'sat-btn';
-        button.id = `sat-btn-${target.id}`;
+        button.className = 'sat-btn command-target-btn';
+        button.id = `command-sat-btn-${target.id}`;
         button.dataset.satelliteId = String(target.id);
         button.title = target.callsign;
         button.textContent = target.label;
-        button.addEventListener('click', () => selectSatellite(target.id));
-        container.appendChild(button);
+        button.addEventListener('click', () => toggleCommandTarget(target.id));
+        commandGroup.appendChild(button);
     });
+
+    const telemetryGroup = document.createElement('div');
+    telemetryGroup.className = 'sat-selector-group';
+
+    const telemetryLabel = document.createElement('span');
+    telemetryLabel.className = 'sat-selector-label';
+    telemetryLabel.textContent = 'Telemetry';
+    telemetryGroup.appendChild(telemetryLabel);
+
+    const allButton = document.createElement('button');
+    allButton.className = 'sat-btn telemetry-target-btn';
+    allButton.dataset.telemetryTarget = 'all';
+    allButton.textContent = 'All';
+    allButton.addEventListener('click', () => selectTelemetryTarget('all'));
+    telemetryGroup.appendChild(allButton);
+
+    satelliteTargets.forEach(target => {
+        const button = document.createElement('button');
+        button.className = 'sat-btn telemetry-target-btn';
+        button.dataset.telemetryTarget = String(target.id);
+        button.title = target.callsign;
+        button.textContent = target.label;
+        button.addEventListener('click', () => selectTelemetryTarget(target.id));
+        telemetryGroup.appendChild(button);
+    });
+
+    container.appendChild(commandGroup);
+    container.appendChild(telemetryGroup);
+    updateSatelliteButtons();
 }
 
-/**
- * Set the active satellite target and update XML-RPC routing.
- */
-async function selectSatellite(satelliteId) {
+function getStoredCommandTargetIds() {
     try {
-        const response = await fetch('/api/satellite', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: satelliteId })
-        });
-        const data = await response.json();
-        if (data.success) {
-            currentSatelliteTarget = data.target;
-            updateSatelliteButtons(data.target.id);
-        }
-    } catch (error) {
-        console.error('Error selecting satellite:', error);
+        const stored = JSON.parse(localStorage.getItem(COMMAND_TARGETS_STORAGE_KEY) || '[]');
+        if (!Array.isArray(stored)) return [];
+        return stored
+            .map(id => Number.parseInt(id, 10))
+            .filter(id => satelliteTargets.some(target => target.id === id));
+    } catch {
+        return [];
     }
 }
 
-function updateSatelliteButtons(activeSatelliteId) {
-    document.querySelectorAll('.sat-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.satelliteId === String(activeSatelliteId));
+function getStoredTelemetryTargetId() {
+    const stored = localStorage.getItem(TELEMETRY_TARGET_STORAGE_KEY);
+    if (!stored || stored === 'all') return 'all';
+    const storedId = Number.parseInt(stored, 10);
+    return satelliteTargets.some(target => target.id === storedId) ? storedId : 'all';
+}
+
+function toggleCommandTarget(satelliteId) {
+    if (!satelliteTargets.some(target => target.id === satelliteId)) return;
+
+    if (selectedCommandTargetIds.includes(satelliteId)) {
+        selectedCommandTargetIds = selectedCommandTargetIds.filter(id => id !== satelliteId);
+    } else {
+        selectedCommandTargetIds = [...selectedCommandTargetIds, satelliteId];
+    }
+
+    if (selectedCommandTargetIds.length === 0 && satelliteTargets.length > 0) {
+        selectedCommandTargetIds = [satelliteTargets[0].id];
+    }
+
+    localStorage.setItem(COMMAND_TARGETS_STORAGE_KEY, JSON.stringify(selectedCommandTargetIds));
+    updateSatelliteButtons();
+}
+
+function selectTelemetryTarget(targetId) {
+    selectedTelemetryTargetId = targetId === 'all' ? 'all' : Number.parseInt(targetId, 10);
+    localStorage.setItem(TELEMETRY_TARGET_STORAGE_KEY, String(selectedTelemetryTargetId));
+    updateSatelliteButtons();
+    renderReceivedPackets(receivedPacketHistory);
+}
+
+function updateSatelliteButtons() {
+    document.querySelectorAll('.command-target-btn').forEach(btn => {
+        btn.classList.toggle('active', selectedCommandTargetIds.includes(Number.parseInt(btn.dataset.satelliteId, 10)));
+    });
+    document.querySelectorAll('.telemetry-target-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.telemetryTarget === String(selectedTelemetryTargetId));
     });
 }
 
@@ -1000,6 +1088,10 @@ document.addEventListener('DOMContentLoaded', function() {
     setInterval(updatePacketDisplay, 2000);
     updatePacketDisplay();
 
+    // Update shared sent-command history every 2 seconds
+    setInterval(updateSentCommandHistory, 2000);
+    updateSentCommandHistory();
+
     // Update ground station status every 2 seconds
     setInterval(updateGroundStationStatus, 2000);
     updateGroundStationStatus();
@@ -1026,11 +1118,17 @@ async function startAutoDownlink() {
         return;
     }
 
+    const downlinkTargetId = selectedCommandTargetIds[0] || (satelliteTargets[0] && satelliteTargets[0].id);
+
     try {
         const response = await fetch('/api/auto_downlink/start', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ tid: tid, img_path: imgPath })
+            body: JSON.stringify({
+                tid: tid,
+                img_path: imgPath,
+                satellite_id: downlinkTargetId
+            })
         });
         const data = await response.json();
         if (data.success) {

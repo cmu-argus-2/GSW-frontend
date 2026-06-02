@@ -56,11 +56,22 @@ h1 {
 .sat-selector {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 10px;
     padding: 6px 10px;
     background: #4a4d6c;
     border-radius: 20px;
     border: 1px solid #6c7a9b;
+}
+
+.sat-selector-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.sat-selector-group + .sat-selector-group {
+    border-left: 1px solid #6c7a9b;
+    padding-left: 10px;
 }
 
 .sat-selector-label {
