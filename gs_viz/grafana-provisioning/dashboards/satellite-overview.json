@@ -18,8 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 2,
-  "id": 3,
-  "links": [],
+  "liveNow": false,
   "panels": [
     {
       "datasource": {
@@ -68,12 +67,11 @@
               }
             ]
           }
-        },
-        "overrides": []
+        }
       },
       "gridPos": {
         "h": 8,
-        "w": 6,
+        "w": 3,
         "x": 0,
         "y": 0
       },
@@ -95,9 +93,13 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "12.3.2",
+      "pluginVersion": "13.0.2",
       "targets": [
         {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          },
           "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"CDH\")\n  |> filter(fn: (r) => r[\"_field\"] == \"SC_STATE\")\n\n  ",
           "refId": "A"
         }
@@ -159,13 +161,12 @@
               }
             ]
           }
-        },
-        "overrides": []
+        }
       },
       "gridPos": {
         "h": 8,
-        "w": 6,
-        "x": 6,
+        "w": 3,
+        "x": 3,
         "y": 0
       },
       "id": 1,
@@ -186,7 +187,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "12.3.2",
+      "pluginVersion": "13.0.2",
       "targets": [
         {
           "datasource": {
@@ -205,38 +206,29 @@
         "type": "influxdb",
         "uid": "influxdb"
       },
-      "description": "the last measured acquired mainboard temp",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
-          "fieldMinMax": true,
-          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green",
                 "value": 0
-              },
-              {
-                "color": "red",
-                "value": 80
               }
             ]
-          },
-          "unit": "celsius"
-        },
-        "overrides": []
+          }
+        }
       },
       "gridPos": {
         "h": 8,
-        "w": 6,
-        "x": 12,
+        "w": 3,
+        "x": 6,
         "y": 0
       },
-      "id": 11,
+      "id": 25,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
@@ -254,14 +246,18 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "12.3.2",
+      "pluginVersion": "13.0.2",
       "targets": [
         {
-          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"EPS\")\n  |> filter(fn: (r) => r[\"_field\"] == \"MAINBOARD_TEMPERATURE\")\n  |> map(fn: (r) => ({\n      r with\n      _value: float(v: r._value) / 100.0\n  }))\n  ",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          },
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"CDH\")\n  |> filter(fn: (r) => r[\"_field\"] == \"DEPLOYMENT_STATUS\")\n\n  ",
           "refId": "A"
         }
       ],
-      "title": "Mainboard Temperature (°C)",
+      "title": "Deployment Status",
       "type": "stat"
     },
     {
@@ -275,8 +271,6 @@
           "color": {
             "mode": "thresholds"
           },
-          "fieldMinMax": true,
-          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -291,13 +285,12 @@
             ]
           },
           "unit": "celsius"
-        },
-        "overrides": []
+        }
       },
       "gridPos": {
         "h": 8,
-        "w": 6,
-        "x": 18,
+        "w": 3,
+        "x": 9,
         "y": 0
       },
       "id": 21,
@@ -318,9 +311,13 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "12.3.2",
+      "pluginVersion": "13.0.2",
       "targets": [
         {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          },
           "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"EPS\")\n  |> filter(fn: (r) => r[\"_field\"] == \"BATTERY_PACK_TEMPERATURE\")\n  |> map(fn: (r) => ({\n      r with\n      _value: float(v: r._value) / 100.0\n  }))\n  ",
           "refId": "A"
         }
@@ -338,7 +335,260 @@
           "color": {
             "mode": "thresholds"
           },
-          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "decbytes"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 3,
+        "x": 12,
+        "y": 0
+      },
+      "id": 20,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.0.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          },
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"STORAGE\")\n  |> filter(fn: (r) => r[\"_field\"] == \"SD_TOTAL_USAGE\")\n  |> map(fn: (r) => ({\n      r with\n      _value: float(v: r._value)\n  }))\n  ",
+          "refId": "A"
+        }
+      ],
+      "title": "SD USAGE",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "description": "how many seconds until battery empty",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "from": 0,
+                "result": {
+                  "color": "dark-red",
+                  "index": 0
+                },
+                "to": 9060
+              },
+              "type": "range"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "s"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 3,
+        "x": 15,
+        "y": 0
+      },
+      "id": 26,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.0.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          },
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"EPS\")\n  |> filter(fn: (r) => r[\"_field\"] == \"BATTERY_PACK_TTE\")\n\n  ",
+          "refId": "A"
+        }
+      ],
+      "title": "Battery TTE",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "volt"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 3,
+        "x": 18,
+        "y": 0
+      },
+      "id": 22,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.0.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          },
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"EPS\")\n  |> filter(fn: (r) => r[\"_field\"] == \"JETSON_INPUT_VOLTAGE\")\n  |> map(fn: (r) => ({\n      r with\n      _value: float(v: r._value) / 1000.0\n  }))\n  ",
+          "refId": "A"
+        }
+      ],
+      "title": "Jetson Voltage",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "volt"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 3,
+        "x": 21,
+        "y": 0
+      },
+      "id": 30,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.0.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          },
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"EPS\")\n  |> filter(fn: (r) => r[\"_field\"] == \"GPS_VOLTAGE\")\n  |> map(fn: (r) => ({\n      r with\n      _value: float(v: r._value) / 1000.0\n  }))\n  ",
+          "refId": "A"
+        }
+      ],
+      "title": "GPS Voltage",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -353,17 +603,24 @@
             ]
           },
           "unit": "percent"
-        },
-        "overrides": []
+        }
       },
       "gridPos": {
         "h": 8,
-        "w": 6,
+        "w": 3,
         "x": 0,
         "y": 8
       },
       "id": 23,
       "options": {
+        "barShape": "flat",
+        "barWidthFactor": 0.5,
+        "effects": {
+          "barGlow": false,
+          "centerGlow": false,
+          "gradient": false
+        },
+        "endpointMarker": "point",
         "minVizHeight": 75,
         "minVizWidth": 75,
         "orientation": "auto",
@@ -374,11 +631,16 @@
           "fields": "",
           "values": false
         },
+        "segmentCount": 1,
+        "segmentSpacing": 0.3,
+        "shape": "gauge",
         "showThresholdLabels": false,
         "showThresholdMarkers": true,
-        "sizing": "auto"
+        "sizing": "auto",
+        "sparkline": false,
+        "textMode": "auto"
       },
-      "pluginVersion": "12.3.2",
+      "pluginVersion": "13.0.2",
       "targets": [
         {
           "datasource": {
@@ -402,7 +664,6 @@
           "color": {
             "mode": "thresholds"
           },
-          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -437,17 +698,24 @@
             ]
           },
           "unit": "percent"
-        },
-        "overrides": []
+        }
       },
       "gridPos": {
         "h": 8,
-        "w": 6,
-        "x": 6,
+        "w": 3,
+        "x": 3,
         "y": 8
       },
       "id": 2,
       "options": {
+        "barShape": "flat",
+        "barWidthFactor": 0.5,
+        "effects": {
+          "barGlow": false,
+          "centerGlow": false,
+          "gradient": false
+        },
+        "endpointMarker": "point",
         "minVizHeight": 75,
         "minVizWidth": 75,
         "orientation": "auto",
@@ -458,11 +726,16 @@
           "fields": "",
           "values": false
         },
+        "segmentCount": 1,
+        "segmentSpacing": 0.3,
+        "shape": "gauge",
         "showThresholdLabels": false,
         "showThresholdMarkers": true,
-        "sizing": "auto"
+        "sizing": "auto",
+        "sparkline": false,
+        "textMode": "auto"
       },
-      "pluginVersion": "12.3.2",
+      "pluginVersion": "13.0.2",
       "targets": [
         {
           "datasource": {
@@ -481,34 +754,33 @@
         "type": "influxdb",
         "uid": "influxdb"
       },
-      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
-          "fieldMinMax": true,
-          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green",
                 "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
               }
             ]
-          },
-          "unit": "deckbytes"
-        },
-        "overrides": []
+          }
+        }
       },
       "gridPos": {
         "h": 8,
-        "w": 6,
-        "x": 12,
+        "w": 3,
+        "x": 6,
         "y": 8
       },
-      "id": 20,
+      "id": 24,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
@@ -526,14 +798,18 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "12.3.2",
+      "pluginVersion": "13.0.2",
       "targets": [
         {
-          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"CDH\")\n  |> filter(fn: (r) => r[\"_field\"] == \"SD_USAGE\")\n  |> map(fn: (r) => ({\n      r with\n      _value: float(v: r._value)\n  }))\n  ",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          },
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"CDH\")\n  |> filter(fn: (r) => r[\"_field\"] == \"DETUMBLING_ERROR_FLAG\")\n",
           "refId": "A"
         }
       ],
-      "title": "SD USAGE",
+      "title": "Detumbling Error Flag",
       "type": "stat"
     },
     {
@@ -541,44 +817,229 @@
         "type": "influxdb",
         "uid": "influxdb"
       },
-      "description": "",
+      "description": "the last measured acquired mainboard temp",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
-          "fieldMinMax": true,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "celsius"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 3,
+        "x": 9,
+        "y": 8
+      },
+      "id": 11,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.0.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          },
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"EPS\")\n  |> filter(fn: (r) => r[\"_field\"] == \"MAINBOARD_TEMPERATURE\")\n  |> map(fn: (r) => ({\n      r with\n      _value: float(v: r._value) / 100.0\n  }))\n  ",
+          "refId": "A"
+        }
+      ],
+      "title": "Mainboard Temperature (°C)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "description": "how many seconds until battery full",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
           "mappings": [
             {
               "options": {
                 "0": {
+                  "color": "dark-red",
                   "index": 0,
-                  "text": "OFF"
+                  "text": "No FIX"
+                },
+                "1": {
+                  "color": "semi-dark-yellow",
+                  "index": 1,
+                  "text": "Pred FIX"
+                },
+                "2": {
+                  "color": "semi-dark-purple",
+                  "index": 2,
+                  "text": "2D FIX"
+                },
+                "3": {
+                  "color": "semi-dark-blue",
+                  "index": 3,
+                  "text": "3D FIX"
+                },
+                "4": {
+                  "color": "semi-dark-green",
+                  "index": 4,
+                  "text": "3D+ FIX"
                 }
               },
               "type": "value"
-            },
-            {
-              "options": {
-                "from": 5.2,
-                "result": {
-                  "color": "dark-red",
-                  "index": 1
-                }
-              },
-              "type": "range"
-            },
-            {
-              "options": {
-                "result": {
-                  "color": "dark-red",
-                  "index": 2
-                },
-                "to": 4.9
-              },
-              "type": "range"
             }
           ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 3,
+        "x": 12,
+        "y": 8
+      },
+      "id": 31,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.0.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          },
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"GPS\")\n  |> filter(fn: (r) => r[\"_field\"] == \"GPS_FIX_MODE\")\n\n  ",
+          "refId": "A"
+        }
+      ],
+      "title": "GPS FIX",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "description": "how many seconds until battery full",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "s"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 3,
+        "x": 15,
+        "y": 8
+      },
+      "id": 27,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.0.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          },
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"EPS\")\n  |> filter(fn: (r) => r[\"_field\"] == \"BATTERY_PACK_TTF\")\n\n  ",
+          "refId": "A"
+        }
+      ],
+      "title": "Battery TTF",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -589,16 +1050,15 @@
             ]
           },
           "unit": "volt"
-        },
-        "overrides": []
+        }
       },
       "gridPos": {
         "h": 8,
-        "w": 6,
+        "w": 3,
         "x": 18,
         "y": 8
       },
-      "id": 22,
+      "id": 29,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
@@ -616,14 +1076,18 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "12.3.2",
+      "pluginVersion": "13.0.2",
       "targets": [
         {
-          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"EPS\")\n  |> filter(fn: (r) => r[\"_field\"] == \"JETSON_INPUT_VOLTAGE\")\n  |> map(fn: (r) => ({\n      r with\n      _value: float(v: r._value) / 1000.0\n  }))\n  ",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          },
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"EPS\")\n  |> filter(fn: (r) => r[\"_field\"] == \"RF_LDO_OUTPUT_VOLTAGE\")\n  |> map(fn: (r) => ({\n      r with\n      _value: float(v: r._value) / 1000.0\n  }))\n  ",
           "refId": "A"
         }
       ],
-      "title": "Jetson Voltage",
+      "title": "Radio Voltage",
       "type": "stat"
     },
     {
@@ -634,43 +1098,8 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "thresholds"
           },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "always",
-            "showValues": false,
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -680,63 +1109,46 @@
               }
             ]
           },
-          "unit": "percent"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "MAINBOARD_TEMPERATURE"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "short"
-              },
-              {
-                "id": "custom.transform"
-              },
-              {
-                "id": "displayName",
-                "value": "Temperature (x0.01°C)"
-              }
-            ]
-          }
-        ]
+          "unit": "volt"
+        }
       },
       "gridPos": {
         "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 16
+        "w": 3,
+        "x": 21,
+        "y": 8
       },
-      "id": 14,
+      "id": 28,
       "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
         },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "12.3.2",
+      "pluginVersion": "13.0.2",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
             "uid": "influxdb"
           },
-          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"CDH\")\n  |> filter(fn: (r) => r[\"_field\"] == \"CURRENT_RAM_USAGE\")",
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"EPS\")\n  |> filter(fn: (r) => r[\"_field\"] == \"MAINBOARD_VOLTAGE\")\n  |> map(fn: (r) => ({\n      r with\n      _value: float(v: r._value) / 1000.0\n  }))\n  ",
           "refId": "A"
         }
       ],
-      "title": "Current Ram Usage",
-      "type": "timeseries"
+      "title": "Mainboard Voltage",
+      "type": "stat"
     },
     {
       "datasource": {
@@ -786,7 +1198,6 @@
               "mode": "off"
             }
           },
-          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -827,11 +1238,15 @@
       "gridPos": {
         "h": 8,
         "w": 12,
-        "x": 12,
+        "x": 0,
         "y": 16
       },
       "id": 3,
       "options": {
+        "annotations": {
+          "clustering": -1,
+          "multiLane": false
+        },
         "legend": {
           "calcs": [],
           "displayMode": "list",
@@ -844,7 +1259,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.3.2",
+      "pluginVersion": "13.0.2",
       "targets": [
         {
           "datasource": {
@@ -863,7 +1278,124 @@
         "type": "influxdb",
         "uid": "influxdb"
       },
-      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "always",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "MAINBOARD_TEMPERATURE"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "custom.transform",
+                "value": null
+              },
+              {
+                "id": "displayName",
+                "value": "Temperature (x0.01°C)"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "id": 14,
+      "options": {
+        "annotations": {
+          "clustering": -1,
+          "multiLane": false
+        },
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "13.0.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "influxdb"
+          },
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"CDH\")\n  |> filter(fn: (r) => r[\"_field\"] == \"CURRENT_RAM_USAGE\")",
+          "refId": "A"
+        }
+      ],
+      "title": "Current Ram Usage",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "influxdb"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -907,7 +1439,6 @@
             }
           },
           "decimals": 0,
-          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -918,8 +1449,7 @@
             ]
           },
           "unit": "none"
-        },
-        "overrides": []
+        }
       },
       "gridPos": {
         "h": 8,
@@ -929,6 +1459,10 @@
       },
       "id": 18,
       "options": {
+        "annotations": {
+          "clustering": -1,
+          "multiLane": false
+        },
         "legend": {
           "calcs": [],
           "displayMode": "list",
@@ -941,18 +1475,18 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.3.2",
+      "pluginVersion": "13.0.2",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
             "uid": "influxdb"
           },
-          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"CDH\")\n  |> filter(fn: (r) => r[\"_field\"] == \"REBOOT_COUNT\")",
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"CDH\")\n  |> filter(fn: (r) => r[\"_field\"] == \"BOOT_COUNT\")",
           "refId": "A"
         }
       ],
-      "title": "Reboot Counter",
+      "title": "Boot Counter",
       "type": "timeseries"
     },
     {
@@ -960,7 +1494,6 @@
         "type": "influxdb",
         "uid": "influxdb"
       },
-      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1004,7 +1537,6 @@
             }
           },
           "decimals": 0,
-          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -1014,8 +1546,7 @@
               }
             ]
           }
-        },
-        "overrides": []
+        }
       },
       "gridPos": {
         "h": 8,
@@ -1025,6 +1556,10 @@
       },
       "id": 17,
       "options": {
+        "annotations": {
+          "clustering": -1,
+          "multiLane": false
+        },
         "legend": {
           "calcs": [],
           "displayMode": "list",
@@ -1037,18 +1572,18 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.3.2",
+      "pluginVersion": "13.0.2",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
             "uid": "influxdb"
           },
-          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"CDH\")\n  |> filter(fn: (r) => r[\"_field\"] == \"SD_USAGE\")",
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"COMMS\")\n  |> filter(fn: (r) => r[\"_field\"] == \"RX_PACKET_COUNT\" or r[\"_field\"] == \"TX_PACKET_COUNT\")",
           "refId": "A"
         }
       ],
-      "title": "SD_USAGE",
+      "title": "COMMS_COUNTER",
       "type": "timeseries"
     },
     {
@@ -1095,7 +1630,6 @@
               "mode": "off"
             }
           },
-          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -1119,7 +1653,8 @@
                 "value": "short"
               },
               {
-                "id": "custom.transform"
+                "id": "custom.transform",
+                "value": null
               },
               {
                 "id": "displayName",
@@ -1137,6 +1672,10 @@
       },
       "id": 15,
       "options": {
+        "annotations": {
+          "clustering": -1,
+          "multiLane": false
+        },
         "legend": {
           "calcs": [],
           "displayMode": "list",
@@ -1149,7 +1688,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.3.2",
+      "pluginVersion": "13.0.2",
       "targets": [
         {
           "datasource": {
@@ -1207,7 +1746,6 @@
               "mode": "off"
             }
           },
-          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -1231,7 +1769,8 @@
                 "value": "short"
               },
               {
-                "id": "custom.transform"
+                "id": "custom.transform",
+                "value": null
               },
               {
                 "id": "displayName",
@@ -1249,6 +1788,10 @@
       },
       "id": 13,
       "options": {
+        "annotations": {
+          "clustering": -1,
+          "multiLane": false
+        },
         "legend": {
           "calcs": [],
           "displayMode": "list",
@@ -1261,7 +1804,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.3.2",
+      "pluginVersion": "13.0.2",
       "targets": [
         {
           "datasource": {
@@ -1319,7 +1862,8 @@
               "mode": "off"
             }
           },
-          "mappings": [],
+          "max": 8420,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -1330,33 +1874,7 @@
             ]
           },
           "unit": "mvolt"
-        },
-        "overrides": [
-          {
-            "__systemRef": "hideSeriesFrom",
-            "matcher": {
-              "id": "byNames",
-              "options": {
-                "mode": "exclude",
-                "names": [
-                  "BATTERY_PACK_VOLTAGE EPS"
-                ],
-                "prefix": "All except:",
-                "readOnly": true
-              }
-            },
-            "properties": [
-              {
-                "id": "custom.hideFrom",
-                "value": {
-                  "legend": false,
-                  "tooltip": true,
-                  "viz": true
-                }
-              }
-            ]
-          }
-        ]
+        }
       },
       "gridPos": {
         "h": 8,
@@ -1366,6 +1884,10 @@
       },
       "id": 4,
       "options": {
+        "annotations": {
+          "clustering": -1,
+          "multiLane": false
+        },
         "legend": {
           "calcs": [],
           "displayMode": "list",
@@ -1378,14 +1900,14 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.3.2",
+      "pluginVersion": "13.0.2",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
             "uid": "influxdb"
           },
-          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"EPS\")\n  |> filter(fn: (r) => r[\"_field\"] == \"MAINBOARD_VOLTAGE\" or r[\"_field\"] == \"BATTERY_PACK_VOLTAGE\")",
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"EPS\")\n  |> filter(fn: (r) => r[\"_field\"] == \"MAINBOARD_VOLTAGE\" or \n  r[\"_field\"] == \"BATTERY_PACK_VOLTAGE\" or \n  r[\"_field\"]  ==  \"RF_LDO_OUTPUT_VOLTAGE\" or\n  r[\"_field\"]  ==  \"GPS_VOLTAGE\" or\n  r[\"_field\"]  ==  \"BATTERY_PACK_MIDPOINT_VOLTAGE\")\n",
           "refId": "A"
         }
       ],
@@ -1436,7 +1958,6 @@
               "mode": "off"
             }
           },
-          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -1447,8 +1968,7 @@
             ]
           },
           "unit": "mamp"
-        },
-        "overrides": []
+        }
       },
       "gridPos": {
         "h": 8,
@@ -1458,6 +1978,10 @@
       },
       "id": 5,
       "options": {
+        "annotations": {
+          "clustering": -1,
+          "multiLane": false
+        },
         "legend": {
           "calcs": [],
           "displayMode": "list",
@@ -1470,14 +1994,14 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.3.2",
+      "pluginVersion": "13.0.2",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
             "uid": "influxdb"
           },
-          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"EPS\")\n  |> filter(fn: (r) => r[\"_field\"] == \"MAINBOARD_CURRENT\" or r[\"_field\"] == \"BATTERY_PACK_CURRENT\")",
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"EPS\")\n  |> filter(fn: (r) => r[\"_field\"] == \"MAINBOARD_CURRENT\" or \n  r[\"_field\"] == \"BATTERY_PACK_CURRENT\" or \n  r[\"_field\"]  ==  \"RF_LDO_OUTPUT_CURRENT\" or\n  r[\"_field\"]  ==  \"GPS_CURRENT\")",
           "refId": "A"
         }
       ],
@@ -1528,7 +2052,6 @@
               "mode": "off"
             }
           },
-          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -1538,8 +2061,7 @@
               }
             ]
           }
-        },
-        "overrides": []
+        }
       },
       "gridPos": {
         "h": 8,
@@ -1549,6 +2071,10 @@
       },
       "id": 6,
       "options": {
+        "annotations": {
+          "clustering": -1,
+          "multiLane": false
+        },
         "legend": {
           "calcs": [],
           "displayMode": "list",
@@ -1561,7 +2087,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.3.2",
+      "pluginVersion": "13.0.2",
       "targets": [
         {
           "datasource": {
@@ -1619,7 +2145,6 @@
               "mode": "off"
             }
           },
-          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -1629,8 +2154,7 @@
               }
             ]
           }
-        },
-        "overrides": []
+        }
       },
       "gridPos": {
         "h": 8,
@@ -1640,6 +2164,10 @@
       },
       "id": 7,
       "options": {
+        "annotations": {
+          "clustering": -1,
+          "multiLane": false
+        },
         "legend": {
           "calcs": [],
           "displayMode": "list",
@@ -1652,7 +2180,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.3.2",
+      "pluginVersion": "13.0.2",
       "targets": [
         {
           "datasource": {
@@ -1710,7 +2238,6 @@
               "mode": "off"
             }
           },
-          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -1721,33 +2248,7 @@
             ]
           },
           "unit": "short"
-        },
-        "overrides": [
-          {
-            "__systemRef": "hideSeriesFrom",
-            "matcher": {
-              "id": "byNames",
-              "options": {
-                "mode": "exclude",
-                "names": [
-                  "LIGHT_SENSOR_ZP_4 ADCS"
-                ],
-                "prefix": "All except:",
-                "readOnly": true
-              }
-            },
-            "properties": [
-              {
-                "id": "custom.hideFrom",
-                "value": {
-                  "legend": false,
-                  "tooltip": true,
-                  "viz": true
-                }
-              }
-            ]
-          }
-        ]
+        }
       },
       "gridPos": {
         "h": 8,
@@ -1757,6 +2258,10 @@
       },
       "id": 8,
       "options": {
+        "annotations": {
+          "clustering": -1,
+          "multiLane": false
+        },
         "legend": {
           "calcs": [],
           "displayMode": "list",
@@ -1769,14 +2274,14 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.3.2",
+      "pluginVersion": "13.0.2",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
             "uid": "influxdb"
           },
-          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"ADCS\")\n  |> filter(fn: (r) => r[\"_field\"] =~ /LIGHT_SENSOR/)",
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"ADCS\")\n  |> filter(fn: (r) => contains(\n    value: r[\"_field\"],\n    set: [\n      \"LIGHT_SENSOR_XP\",\n      \"LIGHT_SENSOR_XM\",\n      \"LIGHT_SENSOR_YP\",\n      \"LIGHT_SENSOR_YM\",\n      \"LIGHT_SENSOR_ZP_XP\",\n      \"LIGHT_SENSOR_ZP_YM\",\n      \"LIGHT_SENSOR_ZP_XM\",\n      \"LIGHT_SENSOR_ZP_YP\",\n      \"LIGHT_SENSOR_ZM\"\n    ]\n  ))",
           "refId": "A"
         }
       ],
@@ -1827,7 +2332,6 @@
               "mode": "off"
             }
           },
-          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -1836,10 +2340,8 @@
                 "value": 0
               }
             ]
-          },
-          "unit": "mamp"
-        },
-        "overrides": []
+          }
+        }
       },
       "gridPos": {
         "h": 8,
@@ -1849,6 +2351,10 @@
       },
       "id": 9,
       "options": {
+        "annotations": {
+          "clustering": -1,
+          "multiLane": false
+        },
         "legend": {
           "calcs": [],
           "displayMode": "list",
@@ -1861,18 +2367,18 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.3.2",
+      "pluginVersion": "13.0.2",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
             "uid": "influxdb"
           },
-          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"EPS\")\n  |> filter(fn: (r) => r[\"_field\"] =~ /SOLAR_CHARGE_CURRENT/)",
+          "query": "from(bucket: \"telemetry\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"subsystem\"] == \"ADCS\")\n  |> filter(fn: (r) => contains(\n    value: r[\"_field\"],\n    set: [\n      \"SUN_VEC_X\",\n      \"SUN_VEC_Y\",\n      \"SUN_VEC_Z\",\n    ]\n  ))",
           "refId": "A"
         }
       ],
-      "title": "Solar Panel Charging Currents",
+      "title": "Sun Vector",
       "type": "timeseries"
     }
   ],
@@ -1883,16 +2389,27 @@
     "satellite",
     "telemetry"
   ],
-  "templating": {
-    "list": []
-  },
   "time": {
     "from": "now-5m",
     "to": "now"
   },
-  "timepicker": {},
-  "timezone": "",
+  "timepicker": {
+    "refresh_intervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ]
+  },
+  "timezone": "browser",
   "title": "Satellite Overview",
+  "version": 24,
   "uid": "satellite-overview",
-  "version": 1
+  "id": 209666682261504
 }
